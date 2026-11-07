@@ -1,0 +1,21 @@
+# Prompt profiles for SimpleBench. The chosen profile's text is frozen into each
+# benchmark's config.yaml at creation, so editing this file never alters existing benchmarks.
+#   system: optional system message
+#   suffix: optional text appended to each question (after a blank line)
+default: one_letter
+
+profiles:
+  one_letter:
+    system: null
+    suffix: "Answer with JUST ONE LETTER indicating the answer of your choice, without any other text."
+
+  final_answer:
+    system: >-
+      You are an expert at reasoning and you always pick the most realistic answer.
+      Think step by step and output your final answer using the following format:
+      Final Answer: X where X is one of the letters A, B, C, D, E, or F.
+    suffix: null
+
+  bare:
+    system: null
+    suffix: null

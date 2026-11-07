@@ -1,0 +1,49 @@
+# Model registry shared by all benchmarks.
+# Each entry is referenced by its alias (the key) in `bench new/add --models ...`.
+# When a model is added to a benchmark, its fully merged definition is frozen into that
+# benchmark's config.yaml, so editing this file later never changes existing results.
+#
+# Common fields:
+#   provider:     ollama | openrouter
+#   model:        model name as the provider knows it
+#   temperature:  overrides the benchmark's temperature (null = provider/model default)
+#   max_tokens:   overrides the benchmark's max_tokens (null = no explicit limit)
+#   timeout:      seconds per request
+#   concurrency:  parallel requests for this model (default: ollama 1, openrouter 4)
+#   extra:        dict merged verbatim into the request body
+# Ollama-only:
+#   think:        true/false, or "low"/"medium"/"high" for models like gpt-oss
+#   options:      Ollama options (num_ctx, top_p, ...); num_ctx matters for long thinking
+#   base_url:     defaults to $OLLAMA_HOST or http://localhost:11434
+# OpenRouter-only:
+#   reasoning:    OpenRouter reasoning object, e.g. {effort: high}
+#   routing:      OpenRouter `provider` object, e.g. {order: [DeepSeek], allow_fallbacks: false}
+
+# Defaults merged into every model of that provider (model entries win).
+defaults:
+  ollama:
+    think: true
+    timeout: 3600
+    options:
+      num_ctx: 32768
+  openrouter:
+    timeout: 900
+
+models:
+  # --- Local (Ollama) ---
+  nemotron-3.5-lightning: {provider: ollama, model: "nemotron-3.5-lightning:latest"}
+  lfm2.5-24b:             {provider: ollama, model: "lfm2.5:24b"}
+  lfm2.5-8b:              {provider: ollama, model: "lfm2.5:8b"}
+  bonsai-2-9b:            {provider: ollama, model: "bonsai-2:9b"}
+  bonsai-2-27b:           {provider: ollama, model: "bonsai-2:27b"}
+  ornith-1.5-9b:          {provider: ollama, model: "ornith-1.5:9b"}
+  lfm3-vl:                {provider: ollama, model: "lfm3-vl:latest"}
+  gemma4-26b:             {provider: ollama, model: "gemma4:26b"}
+  gemma4-12b:             {provider: ollama, model: "gemma4:12b"}
+  qwen3.8:                {provider: ollama, model: "qwen3.8:latest"}
+  qwen3.5-9b:             {provider: ollama, model: "qwen3.5:9b"}
+  gpt-oss-20b:            {provider: ollama, model: "gpt-oss:20b", think: high}
+
+  # --- Cloud (OpenRouter) --- check exact ids at https://openrouter.ai/models
+  # or-gpt-oss-120b:  {provider: openrouter, model: "openai/gpt-oss-120b", reasoning: {effort: high}}
+  # or-deepseek:      {provider: openrouter, model: "deepseek/deepseek-r1", routing: {order: [DeepSeek], allow_fallbacks: false}}

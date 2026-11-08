@@ -1,7 +1,7 @@
 """Graceful stop: finish the attempts already running, start no new ones.
 
 Two triggers:
-  * press `q` in the terminal running the benchmark (press again to cancel the request);
+  * press `Q` in the terminal running the benchmark (press again to cancel the request);
   * run `bench stop <name>` from any other terminal, which creates a STOP file in the run folder.
 Ctrl+C still aborts immediately.
 """
@@ -37,7 +37,7 @@ class StopControl:
         if sys.stdin is not None and sys.stdin.isatty():
             self._thread = threading.Thread(target=self._watch_keys, daemon=True)
             self._thread.start()
-            print("(press q to stop after the current attempt(s); Ctrl+C aborts immediately)",
+            print("(press Q to stop after the current attempt(s); Ctrl+C aborts immediately)",
                   flush=True)
         else:
             print("(run 'bench stop <name>' to stop after the current attempt(s))", flush=True)
@@ -60,7 +60,7 @@ class StopControl:
         else:
             self._event.set()
             print("\n>>> Stop requested: finishing current attempt(s), then stopping. "
-                  "Press q again to cancel.", flush=True)
+                  "Press Q again to cancel.", flush=True)
 
     def _watch_keys(self) -> None:
         try:

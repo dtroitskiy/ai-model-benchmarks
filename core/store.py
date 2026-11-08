@@ -17,9 +17,13 @@ REPORT = "leaderboard.md"
 def is_error(rec: dict) -> bool:
     """An attempt that produced no usable reply: not scored, retried by `bench run`.
 
-    Includes replies recorded before host aborts (finish_reason "error") were treated as errors.
+    Also covers replies recorded before these cases became errors: host aborts
+    (finish_reason "error") and OpenRouter replies that "stop" with reasoning but no answer.
     """
-    return rec["status"] == "error" or rec.get("finish_reason") == "error"
+    if rec["status"] == "error" or rec.get("finish_reason") == "error":
+        return True
+    return (rec.get("finish_reason") == "stop" and rec.get("served_by") != "ollama"
+            and bool(rec.get("reasoning")) and not (rec.get("content") or "").strip())
 
 
 def now_iso() -> str:

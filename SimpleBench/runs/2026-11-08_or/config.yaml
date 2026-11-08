@@ -1,0 +1,160 @@
+task: simplebench
+name: 2026-11-08_or
+created: '2026-11-08T02:25:25+01:00'
+dataset: SimpleBench/simple_bench_public.json
+dataset_sha256: 4ea0bb96b35f61c97dbf5a7dc059986398441f0cbb17fa709ae2b0e9ba4f76e4
+question_ids: null
+repeats: 10
+prompt_profile: one_letter
+system_prompt: null
+user_suffix: Answer with JUST ONE LETTER indicating an answer of your choice without an explanation of
+  your decision or any other text.
+generation:
+  temperature: null
+  max_tokens: null
+models:
+  or-bonsai-2-9b:
+    timeout: 900
+    provider: openrouter
+    model: prism-ml/ternary-bonsai-2-9b
+    reasoning:
+      enabled: true
+    routing:
+      order:
+      - darkbloom/int4
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-bonsai-2-27b:
+    timeout: 900
+    provider: openrouter
+    model: prism-ml/ternary-bonsai-2-27b
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - darkbloom/int4
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-claude-haiku-5.5:
+    timeout: 900
+    provider: openrouter
+    model: anthropic/claude-haiku-5.5
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - anthropic
+      - amazon-bedrock
+      - google-vertex/global
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-flint:
+    timeout: 900
+    provider: openrouter
+    model: recursive/flint-v1.0:free
+    reasoning:
+      enabled: true
+    concurrency: 2
+    routing:
+      order:
+      - recursive/bf16
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-gemma-4-26b:
+    timeout: 900
+    provider: openrouter
+    model: google/gemma-4-26b-a4b-it
+    reasoning:
+      enabled: true
+    routing:
+      order:
+      - coreweave/bf16
+      - parasail/bf16
+      - novita/bf16
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-glm-5.3-flash:
+    timeout: 900
+    provider: openrouter
+    model: z-ai/glm-5.3-flash
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - z-ai/fp8
+      - baseten/fp8
+      - novita/fp8
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-gpt-6-luna:
+    timeout: 900
+    provider: openrouter
+    model: openai/gpt-6-luna
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - openai
+      - azure
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-gpt-oss-20b:
+    timeout: 900
+    provider: openrouter
+    model: openai/gpt-oss-20b
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - deepinfra/bf16
+      - dekallm/bf16
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-gpt-oss-120b:
+    timeout: 900
+    provider: openrouter
+    model: openai/gpt-oss-120b
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - deepinfra/bf16
+      - dekallm/bf16
+      - crusoe/bf16
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-lfm2.5-24b:
+    timeout: 900
+    provider: openrouter
+    model: liquid/lfm-2.5-24b-a2b
+    reasoning:
+      enabled: true
+    routing:
+      order:
+      - liquid/fp8
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-nemotron-3.5-lightning:
+    timeout: 900
+    provider: openrouter
+    model: nvidia/nemotron-3.5-lightning
+    reasoning:
+      enabled: true
+    routing:
+      order:
+      - coreweave/bf16
+      - deepinfra/bf16
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'
+  or-qwen3.8:
+    timeout: 900
+    provider: openrouter
+    model: qwen/qwen3.8-27b
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - deepinfra/bf16
+      - cerebras/fp16
+      allow_fallbacks: false
+    added: '2026-11-08T02:25:25+01:00'

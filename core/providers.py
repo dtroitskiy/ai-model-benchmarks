@@ -134,6 +134,10 @@ def _openrouter(model: dict, messages: list[dict], gen: dict) -> Completion:
         raise ProviderError(f"Host {data.get('provider')} aborted generation "
                             f"after {usage.get('completion_tokens')} tokens: {detail}",
                             retryable=True)
+    if reason == "stop" and not (msg.get("content") or "").strip() and msg.get("reasoning"):
+        # reported as a normal finish, but the reasoning breaks off and no answer follows
+        raise ProviderError(f"Host {data.get('provider')} returned reasoning but no answer "
+                            f"after {usage.get('completion_tokens')} tokens", retryable=True)
     return Completion(
         content=msg.get("content") or "",
         reasoning=msg.get("reasoning"),

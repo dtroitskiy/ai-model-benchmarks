@@ -77,6 +77,10 @@ def extract_choice(text: str, letters: list[str]) -> str | None:
     last = t.splitlines()[-1] if t else ""
     if m := re.fullmatch(rf"{_OPEN}({cls}){_CLOSE}", last):
         return m[1]
+    # 1c. The letter alone on the first line, followed by an explanation
+    first = t.splitlines()[0] if t else ""
+    if m := re.fullmatch(rf"{_OPEN}({cls}){_CLOSE}", first):
+        return m[1]
     # 2. Explicit answer markers, last occurrence wins
     for pat in (
         rf"\\boxed\{{\s*(?:\\text\{{)?\s*({cls})\b",

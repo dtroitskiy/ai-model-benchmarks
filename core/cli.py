@@ -8,7 +8,7 @@ from pathlib import Path
 from .registry import load_registry, resolve
 from .report import write_report
 from .control import STOP_FILE
-from .runner import load_run_questions, run_benchmark
+from .runner import ORDERS, load_run_questions, run_benchmark
 from .store import CONFIG, Run, is_error
 from .task import all_tasks, get_task
 from .util import ROOT, load_env
@@ -38,7 +38,7 @@ def cmd_new(a) -> None:
                      question_ids=qids, models=models)
     print(f"Created benchmark '{a.name}' at {run.path}")
     if not a.no_run:
-        run_benchmark(run, concurrency=a.concurrency)
+        run_benchmark(run, concurrency=a.concurrency, order=a.order)
 
 
 def cmd_add(a) -> None:
@@ -46,12 +46,25 @@ def cmd_add(a) -> None:
     added = run.add_models(resolve(_csv(a.models)))
     print(f"Added to '{run.name}': {', '.join(added) or '(nothing new)'}")
     if added and not a.no_run:
-        run_benchmark(run, only_models=added, concurrency=a.concurrency)
+        run_benchmark(run, only_models=added, concurrency=a.concurrency, order=a.order)
 
 
 def cmd_run(a) -> None:
     run = Run.find(a.name, a.task)
-    run_benchmark(run, only_models=_csv(a.models) or None, concurrency=a.concurrency)
+    run_benchmark(run, only_models=_csv(a.models) or None, concurrency=a.concurrency,
+                  order=a.order)
+
+
+def cmd_extend(a) -> None:
+    run = Run.find(a.name, a.task)
+    before = run.config["repeats"]
+    run.set_repeats(a.repeats)
+    if a.repeats == before:
+        print(f"'{run.name}' already has {before} repeats")
+    else:
+        print(f"'{run.name}': repeats {before} -> {a.repeats}")
+    if not a.no_run:
+        run_benchmark(run, concurrency=a.concurrency, order=a.order)
 
 
 def cmd_report(a) -> None:
@@ -109,6 +122,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--dataset", help="dataset file (default: the task's bundled one)")
     s.add_argument("--no-run", action="store_true", help="only create, don't run yet")
     s.add_argument("--concurrency", type=int, help="parallel requests per OpenRouter model (default 4; a model's own lower value wins; Ollama unaffected)")
+    s.add_argument("--order", choices=ORDERS, help="rounds: all models per repeat, leaderboard after each round; models: one model at a time (default: rounds if any Ollama model, else models)")
     s.set_defaults(fn=cmd_new)
 
     s = sub.add_parser("add", help="add models to an existing benchmark and run only them")
@@ -117,6 +131,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--task")
     s.add_argument("--no-run", action="store_true")
     s.add_argument("--concurrency", type=int, help="parallel requests per OpenRouter model (default 4; a model's own lower value wins; Ollama unaffected)")
+    s.add_argument("--order", choices=ORDERS, help="rounds: all models per repeat, leaderboard after each round; models: one model at a time (default: rounds if any Ollama model, else models)")
     s.set_defaults(fn=cmd_add)
 
     s = sub.add_parser("run", help="run/resume pending attempts (also retries errors)")
@@ -124,7 +139,17 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--models", help="limit to these aliases")
     s.add_argument("--task")
     s.add_argument("--concurrency", type=int, help="parallel requests per OpenRouter model (default 4; a model's own lower value wins; Ollama unaffected)")
+    s.add_argument("--order", choices=ORDERS, help="rounds: all models per repeat, leaderboard after each round; models: one model at a time (default: rounds if any Ollama model, else models)")
     s.set_defaults(fn=cmd_run)
+
+    s = sub.add_parser("extend", help="raise the number of repeats and run the new rounds")
+    s.add_argument("name")
+    s.add_argument("--repeats", type=int, required=True, help="new total number of repeats")
+    s.add_argument("--task")
+    s.add_argument("--no-run", action="store_true")
+    s.add_argument("--concurrency", type=int, help="parallel requests per OpenRouter model (default 4; a model's own lower value wins; Ollama unaffected)")
+    s.add_argument("--order", choices=ORDERS, help="rounds: all models per repeat, leaderboard after each round; models: one model at a time (default: rounds if any Ollama model, else models)")
+    s.set_defaults(fn=cmd_extend)
 
     s = sub.add_parser("report", help="rebuild and print the leaderboard")
     s.add_argument("name")

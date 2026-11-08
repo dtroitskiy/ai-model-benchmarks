@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .control import StopControl
@@ -10,7 +11,7 @@ from .providers import ProviderError, complete
 from .report import write_report
 from .store import Run, is_error, now_iso
 from .task import Question, Task, get_task
-from .util import sha256_file
+from .util import fmt_duration, sha256_file
 
 DEFAULT_CONCURRENCY = {"ollama": 1, "openrouter": 4}
 
@@ -82,75 +83,168 @@ def effective_concurrency(model: dict, override: int | None) -> int:
     return min(own, override) if own else override
 
 
+ORDERS = ("rounds", "models")
+
+
+def choose_order(run: Run, aliases: list[str], override: str | None) -> str:
+    """rounds: repeat-major (every model answers every question, then the next repeat), so the
+    leaderboard is meaningful after each round; best for slow sequential local models.
+    models: model-major, each model's parallel pool draws from all its pending attempts, so one
+    slow reply never leaves the other workers idle; best for cloud models."""
+    if override:
+        return override
+    return "rounds" if any(run.models[a]["provider"] == "ollama" for a in aliases) else "models"
+
+
 def run_benchmark(run: Run, only_models: list[str] | None = None,
-                  concurrency: int | None = None) -> None:
+                  concurrency: int | None = None, order: str | None = None) -> None:
     task = get_task(run.config["task"])
     questions = load_run_questions(run, task)
-    repeats = run.config["repeats"]
     aliases = only_models or list(run.models)
     unknown = [a for a in aliases if a not in run.models]
     if unknown:
         raise SystemExit(f"Not in benchmark '{run.name}': {', '.join(unknown)}")
 
     finished = {k for k, r in run.latest().items() if not is_error(r)}
-    with StopControl(run.path) as stop:
-        stopped = _run_models(run, task, questions, repeats, aliases, finished, stop,
-                              concurrency)
-    if stopped:
-        print(f"\nStopped. Finished attempts are saved; 'bench run {run.name}' resumes the rest.\n")
-    else:
-        print()
-    write_report(run, questions)
-
-
-def _run_models(run, task, questions, repeats, aliases, finished, stop, concurrency) -> bool:
-    """Returns True if stopped early by a graceful stop request."""
-
-    def guarded(alias, model, q, a):
-        if stop.requested:  # checked when a worker picks the attempt up, not when queued
-            return None
-        return _attempt(run, task, alias, model, q, a)
-
+    order = choose_order(run, aliases, order)
+    session = None
     try:
+        with StopControl(run.path) as stop:
+            session = _Session(run, task, questions, stop, concurrency)
+            print(f"Order: {order} ({run.config['repeats']} repeats, {len(aliases)} models)",
+                  flush=True)
+            if order == "rounds":
+                stopped = session.by_rounds(aliases, finished)
+            else:
+                stopped = session.by_models(aliases, finished)
+    except KeyboardInterrupt:
+        print("\nInterrupted. Finished attempts are saved; 'bench run "
+              f"{run.name}' resumes the rest.", flush=True)
+        if session:
+            session.save("interrupted")
+        write_report(run, questions, quiet=True)
+        sys.stdout.flush()
+        os._exit(130)  # don't wait for in-flight HTTP requests
+    if stopped:
+        print(f"\nStopped. Finished attempts are saved; 'bench run {run.name}' resumes the rest.")
+    print()
+    session.save("stopped" if stopped else "completed")
+    write_report(run, questions)
+    session.print_summary()
+
+
+class _Session:
+    """One `bench` invocation: executes attempts and tracks its wall time."""
+
+    def __init__(self, run: Run, task: Task, questions: list[Question], stop, concurrency):
+        self.run, self.task, self.questions, self.stop = run, task, questions, stop
+        self.concurrency = concurrency
+        self.started = now_iso()
+        self.t0 = time.monotonic()
+        self.attempts = 0
+        self.saved = False
+
+    def since_start(self) -> str:
+        return fmt_duration(time.monotonic() - self.t0)
+
+    # ------------------------------------------------------------ orders
+    def by_models(self, aliases: list[str], finished: set) -> bool:
+        repeats = self.run.config["repeats"]
         for idx, alias in enumerate(aliases, 1):
-            if stop.requested:
+            if self.stop.requested:
                 return True
-            model = run.models[alias]
-            # attempt-major order: a partial run still covers every question evenly
-            pending = [(q, a) for a in range(1, repeats + 1) for q in questions
+            # attempt-major within the model: a partial run still covers every question evenly
+            pending = [(q, a) for a in range(1, repeats + 1) for q in self.questions
                        if (alias, q.id, a) not in finished]
             tag = f"Model {idx}/{len(aliases)} [{alias}]"
             if not pending:
                 print(f"{tag} complete, nothing to do")
                 continue
-            conc = effective_concurrency(model, concurrency)
-            print(f"\n{tag} {len(pending)} attempts pending "
-                  f"({model['provider']}: {model['model']}, concurrency {conc})", flush=True)
-            done = 0
-            if conc <= 1:
-                for q, a in pending:
-                    if stop.requested:
-                        return True
-                    rec = _attempt(run, task, alias, model, q, a)
-                    run.append(rec)
-                    done += 1
-                    print(_line(rec, done, len(pending)), flush=True)
-            else:
-                with ThreadPoolExecutor(conc) as ex:
-                    futs = [ex.submit(guarded, alias, model, q, a) for q, a in pending]
-                    for f in as_completed(futs):
-                        rec = f.result()
-                        if rec is None:
-                            continue
-                        run.append(rec)
-                        done += 1
-                        print(_line(rec, done, len(pending)), flush=True)
-                if stop.requested:
+            if self._batch(alias, pending, f"\n{tag}"):
+                return True
+        return False
+
+    def by_rounds(self, aliases: list[str], finished: set) -> bool:
+        repeats = self.run.config["repeats"]
+        for a in range(1, repeats + 1):
+            work = [(alias, [(q, a) for q in self.questions if (alias, q.id, a) not in finished])
+                    for alias in aliases]
+            if not any(items for _, items in work):
+                print(f"Round {a}/{repeats} complete, nothing to do")
+                continue
+            print(f"\n=== Round {a}/{repeats} ===", flush=True)
+            for idx, (alias, items) in enumerate(work, 1):
+                if self.stop.requested:
                     return True
-    except KeyboardInterrupt:
-        print("\nInterrupted. Finished attempts are saved; 'bench run "
-              f"{run.name}' resumes the rest.", flush=True)
-        write_report(run, questions, quiet=True)
-        sys.stdout.flush()
-        os._exit(130)  # don't wait for in-flight HTTP requests
-    return False
+                if items and self._batch(alias, items, f"Model {idx}/{len(aliases)} [{alias}]"):
+                    return True
+            self.report()
+            print(f"=== Round {a}/{repeats} done · {self.since_start()} since start · "
+                  f"leaderboard updated ===", flush=True)
+        return False
+
+    # ------------------------------------------------------------ execution
+    def _batch(self, alias: str, items: list[tuple], header: str) -> bool:
+        """Runs one model's attempts. Returns True if a stop request skipped any of them."""
+        run, model = self.run, self.run.models[alias]
+        conc = effective_concurrency(model, self.concurrency)
+        print(f"{header} {len(items)} attempts pending "
+              f"({model['provider']}: {model['model']}, concurrency {conc})", flush=True)
+        t0 = time.monotonic()
+        done = 0
+        skipped = False
+
+        def record(rec: dict) -> None:
+            nonlocal done
+            run.append(rec)
+            self.attempts += 1
+            done += 1
+            print(_line(rec, done, len(items)), flush=True)
+
+        def guarded(q, a):
+            if self.stop.requested:  # checked when a worker picks the attempt up, not when queued
+                return None
+            return _attempt(run, self.task, alias, model, q, a)
+
+        if conc <= 1:
+            for q, a in items:
+                if self.stop.requested:
+                    skipped = True
+                    break
+                record(_attempt(run, self.task, alias, model, q, a))
+        else:
+            ex = ThreadPoolExecutor(conc)
+            try:
+                for f in as_completed([ex.submit(guarded, q, a) for q, a in items]):
+                    if (rec := f.result()) is None:
+                        skipped = True
+                    else:
+                        record(rec)
+            finally:
+                ex.shutdown(wait=False, cancel_futures=True)
+        if done:
+            print(f"  [{alias}] {done} attempts in {fmt_duration(time.monotonic() - t0)} · "
+                  f"{self.since_start()} since start", flush=True)
+        if not skipped:
+            self.report()  # keep leaderboard.md current
+        return skipped
+
+    def info(self, status: str = "running") -> dict:
+        return {"start": self.started, "end": now_iso(),
+                "wall_s": round(time.monotonic() - self.t0, 1), "attempts": self.attempts,
+                "status": status}
+
+    def report(self) -> None:
+        write_report(self.run, self.questions, quiet=True,
+                     live=None if self.saved else self.info())
+
+    def save(self, status: str) -> None:
+        """Append this session to sessions.jsonl (only if it did any work)."""
+        if self.attempts and not self.saved:
+            self.run.add_session(self.info(status))
+        self.saved = True
+
+    def print_summary(self) -> None:
+        wall = time.monotonic() - self.t0
+        print(f"This session: {fmt_duration(wall)} ({self.attempts} attempts) · "
+              f"Benchmark total: {self.run.time_summary() or '0s'}", flush=True)

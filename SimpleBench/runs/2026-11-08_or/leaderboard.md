@@ -1,8 +1,9 @@
 # simplebench — 2026-11-08_or
 
-- Created: 2026-11-08T02:25:25+01:00 · Updated: 2026-11-08T08:25:36+01:00
+- Created: 2026-11-08T02:25:25+01:00 · Updated: 2026-11-08T09:05:25+01:00
 - Dataset: `SimpleBench/simple_bench_public.json` (10 questions) · Repeats: 10 · Max points per model: 100
 - Prompt profile: `one_letter` · Temperature: None · Max tokens: None
+- Run time: untracked (benchmark created before session timing)
 
 | # | Model | Points | Score | Per round (of 10) | Majority vote | Unparsed | Truncated | Errors | Avg time | Avg out tok | Cost |
 |--:|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|

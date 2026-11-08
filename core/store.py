@@ -7,11 +7,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .task import Task, all_tasks
-from .util import ROOT, read_yaml, sha256_file, write_yaml
+from .util import ROOT, fmt_duration, read_yaml, sha256_file, write_yaml
 
 CONFIG = "config.yaml"
 RESULTS = "results.jsonl"
 REPORT = "leaderboard.md"
+SESSIONS = "sessions.jsonl"  # one line per `bench new/add/run/extend` session that did work
 
 
 def is_error(rec: dict) -> bool:
@@ -105,6 +106,42 @@ class Run:
             added.append(alias)
         write_yaml(self.path / CONFIG, self.config)
         return added
+
+    def set_repeats(self, repeats: int) -> None:
+        """Raise the number of repeats. More samples of the same setup keep results comparable."""
+        current = self.config["repeats"]
+        if repeats < current:
+            raise SystemExit(f"'{self.name}' already has {current} repeats; it can only grow "
+                             f"(lowering it would hide recorded attempts).")
+        self.config["repeats"] = repeats
+        write_yaml(self.path / CONFIG, self.config)
+
+    # ---------------------------------------------------------------- sessions (wall time)
+    def add_session(self, session: dict) -> None:
+        with open(self.path / SESSIONS, "a", encoding="utf-8") as f:
+            f.write(json.dumps(session, ensure_ascii=False) + "\n")
+
+    def sessions(self) -> list[dict]:
+        p = self.path / SESSIONS
+        if not p.exists():
+            return []
+        with open(p, encoding="utf-8") as f:
+            return [json.loads(line) for line in f if line.strip()]
+
+    def time_summary(self, live: dict | None = None) -> str | None:
+        """Total wall time over all sessions, pauses between them excluded.
+
+        `live` is the session still running (not yet in sessions.jsonl), if any.
+        """
+        sessions = self.sessions() + ([live] if live and live["attempts"] else [])
+        n_records = len(self.records())
+        if not sessions:
+            return "untracked" if n_records else None
+        total = sum(s["wall_s"] for s in sessions)
+        text = f"{fmt_duration(total)} over {len(sessions)} session" + ("s" if len(sessions) > 1 else "")
+        if sum(s["attempts"] for s in sessions) < n_records:
+            text += " (+ earlier untracked sessions)"
+        return text
 
     # ---------------------------------------------------------------- results
     def append(self, record: dict) -> None:

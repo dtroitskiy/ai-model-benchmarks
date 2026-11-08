@@ -78,7 +78,13 @@ def _fmt_rounds(rounds: list[int], n: int) -> str:
     return f"{statistics.mean(rounds):.1f} ± {statistics.stdev(rounds):.1f}"
 
 
-def render(run: Run, questions: list[Question]) -> str:
+def _run_time_line(summary: str | None) -> str:
+    if summary == "untracked":
+        return "- Run time: untracked (benchmark created before session timing)"
+    return f"- Run time: {summary or '–'} (wall time, pauses between sessions excluded)"
+
+
+def render(run: Run, questions: list[Question], live: dict | None = None) -> str:
     task = get_task(run.config["task"])
     by_id = {q.id: q for q in questions}
     latest = {k: rescore(r, by_id[k[1]], task) if k[1] in by_id else r
@@ -96,6 +102,7 @@ def render(run: Run, questions: list[Question]) -> str:
         f"· Max points per model: {nq * cfg['repeats']}",
         f"- Prompt profile: `{cfg['prompt_profile']}` · Temperature: {gen.get('temperature')} "
         f"· Max tokens: {gen.get('max_tokens')}",
+        _run_time_line(run.time_summary(live)),
         "",
         "| # | Model | Points | Score | Per round (of "
         f"{nq}) | Majority vote | Unparsed | Truncated | Errors | Avg time | Avg out tok | Cost |",
@@ -138,8 +145,9 @@ def render(run: Run, questions: list[Question]) -> str:
     return "\n".join(out)
 
 
-def write_report(run: Run, questions: list[Question], quiet: bool = False) -> str:
-    text = render(run, questions)
+def write_report(run: Run, questions: list[Question], quiet: bool = False,
+                 live: dict | None = None) -> str:
+    text = render(run, questions, live)
     (run.path / REPORT).write_text(text, encoding="utf-8")
     if not quiet:
         print(text)

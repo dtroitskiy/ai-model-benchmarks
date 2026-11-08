@@ -31,5 +31,10 @@ to cancel). Ctrl+C aborts immediately and loses the attempts in progress.
 `new` options: `--profile final_answer`, `--temperature 0.7`, `--max-tokens N`,
 `--questions 1,2,3`, `--no-run`.
 
+`new`, `add` and `run` accept `--concurrency N`: parallel requests per OpenRouter model for that
+session (default 4). It changes only speed, not results. A model's own lower `concurrency` still
+wins (e.g. free-tier Flint stays at 2). Ollama models are unaffected because a local server would
+only queue the requests.
+
 Each question attempt is a separate request with no shared history. A new benchmark never touches
 existing ones. To change the prompt, repeats or temperature, create a new benchmark.

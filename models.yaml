@@ -28,6 +28,7 @@ defaults:
       num_ctx: 32768
   openrouter:
     timeout: 900
+    concurrency: 10
 
 models:
   # --- Local (Ollama) ---
@@ -82,6 +83,9 @@ models:
   or-lfm2.5-24b:                 # single host (Liquid itself); NOTE max output only 8192 tokens
     {provider: openrouter, model: "liquid/lfm-2.5-24b-a2b", reasoning: {enabled: true},
      routing: {order: ["liquid/fp8"], allow_fallbacks: false}}
+  or-mimo-v2.6-flash:            # reasoning optional, no effort levels; GMICloud is the only bf16 host
+    {provider: openrouter, model: "xiaomi/mimo-v2.6-flash", reasoning: {enabled: true},
+     routing: {order: ["gmicloud/bf16", "xiaomi/fp8", "deepinfra/fp8"], allow_fallbacks: false}}
   or-nemotron-3.5-lightning:
     {provider: openrouter, model: "nvidia/nemotron-3.5-lightning", reasoning: {enabled: true},
      routing: {order: ["coreweave/bf16", "deepinfra/bf16"], allow_fallbacks: false}}

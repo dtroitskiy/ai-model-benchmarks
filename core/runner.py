@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from .control import StopControl
 from .providers import ProviderError, complete
 from .report import write_report
-from .store import Run, now_iso
+from .store import Run, is_error, now_iso
 from .task import Question, Task, get_task
 from .util import sha256_file
 
@@ -70,7 +70,20 @@ def _line(rec: dict, done: int, total: int) -> str:
     return head + f"{mark}{got} (expected {rec['expected']}; {extra})"
 
 
-def run_benchmark(run: Run, only_models: list[str] | None = None) -> None:
+def effective_concurrency(model: dict, override: int | None) -> int:
+    """--concurrency applies to OpenRouter models only; a model's own lower value still wins.
+
+    Ollama models are excluded: a local server queues parallel requests, so they would only
+    inflate measured times and risk hitting the request timeout.
+    """
+    own = model.get("concurrency")
+    if override is None or model["provider"] != "openrouter":
+        return own or DEFAULT_CONCURRENCY[model["provider"]]
+    return min(own, override) if own else override
+
+
+def run_benchmark(run: Run, only_models: list[str] | None = None,
+                  concurrency: int | None = None) -> None:
     task = get_task(run.config["task"])
     questions = load_run_questions(run, task)
     repeats = run.config["repeats"]
@@ -79,9 +92,10 @@ def run_benchmark(run: Run, only_models: list[str] | None = None) -> None:
     if unknown:
         raise SystemExit(f"Not in benchmark '{run.name}': {', '.join(unknown)}")
 
-    finished = {k for k, r in run.latest().items() if r["status"] != "error"}
+    finished = {k for k, r in run.latest().items() if not is_error(r)}
     with StopControl(run.path) as stop:
-        stopped = _run_models(run, task, questions, repeats, aliases, finished, stop)
+        stopped = _run_models(run, task, questions, repeats, aliases, finished, stop,
+                              concurrency)
     if stopped:
         print(f"\nStopped. Finished attempts are saved; 'bench run {run.name}' resumes the rest.\n")
     else:
@@ -89,7 +103,7 @@ def run_benchmark(run: Run, only_models: list[str] | None = None) -> None:
     write_report(run, questions)
 
 
-def _run_models(run, task, questions, repeats, aliases, finished, stop) -> bool:
+def _run_models(run, task, questions, repeats, aliases, finished, stop, concurrency) -> bool:
     """Returns True if stopped early by a graceful stop request."""
 
     def guarded(alias, model, q, a):
@@ -108,7 +122,7 @@ def _run_models(run, task, questions, repeats, aliases, finished, stop) -> bool:
             if not pending:
                 print(f"[{alias}] complete, nothing to do")
                 continue
-            conc = model.get("concurrency") or DEFAULT_CONCURRENCY[model["provider"]]
+            conc = effective_concurrency(model, concurrency)
             print(f"[{alias}] {len(pending)} attempts pending "
                   f"({model['provider']}: {model['model']}, concurrency {conc})", flush=True)
             done = 0

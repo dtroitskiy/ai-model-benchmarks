@@ -14,6 +14,14 @@ RESULTS = "results.jsonl"
 REPORT = "leaderboard.md"
 
 
+def is_error(rec: dict) -> bool:
+    """An attempt that produced no usable reply: not scored, retried by `bench run`.
+
+    Includes replies recorded before host aborts (finish_reason "error") were treated as errors.
+    """
+    return rec["status"] == "error" or rec.get("finish_reason") == "error"
+
+
 def now_iso() -> str:
     return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
 

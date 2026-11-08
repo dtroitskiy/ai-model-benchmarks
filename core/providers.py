@@ -129,6 +129,11 @@ def _openrouter(model: dict, messages: list[dict], gen: dict) -> Completion:
     msg = choice.get("message") or {}
     usage = data.get("usage") or {}
     reason = choice.get("finish_reason")
+    if reason == "error":  # host failed mid-generation: partial reasoning, no answer
+        detail = choice.get("error") or choice.get("native_finish_reason")
+        raise ProviderError(f"Host {data.get('provider')} aborted generation "
+                            f"after {usage.get('completion_tokens')} tokens: {detail}",
+                            retryable=True)
     return Completion(
         content=msg.get("content") or "",
         reasoning=msg.get("reasoning"),

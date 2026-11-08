@@ -4,7 +4,7 @@ from __future__ import annotations
 import statistics
 from collections import Counter
 
-from .store import REPORT, Run, now_iso
+from .store import REPORT, Run, is_error, now_iso
 from .task import Question, Task, get_task
 
 
@@ -13,8 +13,8 @@ def rescore(rec: dict, q: Question, task: Task) -> dict:
 
     Keeps results.jsonl untouched while letting parser fixes apply to old attempts.
     """
-    if rec["status"] == "error":
-        return rec
+    if is_error(rec):
+        return {**rec, "status": "error", "correct": False}
     extracted = task.extract(rec.get("content") or "", q)
     if extracted is not None:
         status = "answered"

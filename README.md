@@ -15,6 +15,8 @@ copy .env.example .env      # then put your OPENROUTER_API_KEY in .env
   - `config.yaml`: settings frozen at creation (prompt text, repeats, temperature, dataset hash, model definitions)
   - `results.jsonl`: one line per (model, question, attempt), including the thinking text and the final reply
   - `leaderboard.md`: generated from the results
+  - `leaderboard.html`: the same leaderboard, styled (score bars, best values highlighted,
+    per-question grid colored by accuracy, sortable columns); open it in a browser
   - `sessions.jsonl`: start, end and wall time of each session, for the total run time
 
 ## Usage
@@ -49,6 +51,12 @@ accept `--order rounds|models` to override this.
 that does work is logged in `sessions.jsonl`. At the end, and in the leaderboard header, the
 benchmark's total wall time is the sum of its sessions, so pauses between sessions don't count.
 Runs created before this was added show as untracked.
+
+**Time limit.** `timeout` in `models.yaml` only fails a request after that long with no data, and
+OpenRouter keeps sending keep-alive bytes while a model generates. `max_duration` (OpenRouter
+default: 1800 s) limits an attempt's total time, so a reasoning loop can't stall a run. A reply that
+hits it counts as truncated and is not retried. Model settings are frozen per benchmark, so for an
+existing one pass `--max-duration SECONDS` to `run`, `add`, `extend` or `new`.
 
 Each question attempt is a separate request with no shared history. A new benchmark never touches
 existing ones. To change the prompt, repeats or temperature, create a new benchmark.

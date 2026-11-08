@@ -12,6 +12,7 @@ from .util import ROOT, fmt_duration, read_yaml, sha256_file, write_yaml
 CONFIG = "config.yaml"
 RESULTS = "results.jsonl"
 REPORT = "leaderboard.md"
+REPORT_HTML = "leaderboard.html"
 SESSIONS = "sessions.jsonl"  # one line per `bench new/add/run/extend` session that did work
 
 

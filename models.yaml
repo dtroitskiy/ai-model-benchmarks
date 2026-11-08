@@ -8,7 +8,8 @@
 #   model:        model name as the provider knows it
 #   temperature:  overrides the benchmark's temperature (null = provider/model default)
 #   max_tokens:   overrides the benchmark's max_tokens (null = no explicit limit)
-#   timeout:      seconds per request
+#   timeout:      seconds of silence before a request fails (keep-alive bytes reset it)
+#   max_duration: total seconds per attempt; a reply still running then counts as truncated
 #   concurrency:  parallel requests for this model (default: ollama 1, openrouter 4)
 #   extra:        dict merged verbatim into the request body
 # Ollama-only:
@@ -27,7 +28,8 @@ defaults:
     options:
       num_ctx: 32768
   openrouter:
-    timeout: 900
+    timeout: 600
+    max_duration: 1800  # stops runaway reasoning loops (some hosts allow 900k+ output tokens)
     concurrency: 10
 
 models:

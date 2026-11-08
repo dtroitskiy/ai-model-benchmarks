@@ -1,6 +1,7 @@
 """Provider adapters: one `complete()` call per question attempt, no shared history."""
 from __future__ import annotations
 
+import json
 import os
 import time
 from dataclasses import dataclass, field
@@ -29,25 +30,51 @@ class ProviderError(Exception):
         self.retryable = retryable
 
 
+class TimeLimitExceeded(ProviderError):
+    """The attempt ran past the model's `max_duration`: recorded as truncated, not retried."""
+
+    def __init__(self, limit: float):
+        super().__init__(f"no reply within max_duration ({limit:.0f}s)", retryable=False)
+        self.limit = limit
+
+
 def _gen_value(model: dict, gen: dict, key: str):
     """Model-level setting overrides the benchmark-level one."""
     return model[key] if model.get(key) is not None else gen.get(key)
 
 
-def _post(url: str, body: dict, headers: dict, timeout: float) -> dict:
+def _post(url: str, body: dict, headers: dict, timeout: float,
+          max_duration: float | None = None) -> dict:
+    """POST and return the JSON reply.
+
+    `timeout` limits silence between received bytes; OpenRouter sends keep-alive bytes while
+    a model generates, so it never fires on a long reply. `max_duration` limits the whole
+    request: the body is read in chunks and the request is dropped once the limit passes.
+    """
+    t0 = time.monotonic()
+    read_timeout = min(timeout, max_duration) if max_duration else timeout
+    chunks = []
     try:
-        r = httpx.post(url, json=body, headers=headers,
-                       timeout=httpx.Timeout(timeout, connect=30))
+        with httpx.stream("POST", url, json=body, headers=headers,
+                          timeout=httpx.Timeout(read_timeout, connect=30)) as r:
+            for chunk in r.iter_bytes():
+                chunks.append(chunk)
+                if max_duration and time.monotonic() - t0 > max_duration:
+                    raise TimeLimitExceeded(max_duration)
+            status = r.status_code
     except (httpx.TimeoutException, httpx.TransportError) as e:
+        if max_duration and time.monotonic() - t0 >= max_duration - 1:
+            raise TimeLimitExceeded(max_duration) from e
         raise ProviderError(f"{type(e).__name__}: {e}", retryable=True) from e
-    if r.status_code == 429 or r.status_code >= 500:
-        raise ProviderError(f"HTTP {r.status_code}: {r.text[:500]}", retryable=True)
-    if r.status_code >= 400:
-        raise ProviderError(f"HTTP {r.status_code}: {r.text[:500]}", retryable=False)
+    text = b"".join(chunks).decode("utf-8", errors="replace")
+    if status == 429 or status >= 500:
+        raise ProviderError(f"HTTP {status}: {text[:500]}", retryable=True)
+    if status >= 400:
+        raise ProviderError(f"HTTP {status}: {text[:500]}", retryable=False)
     try:
-        return r.json()
+        return json.loads(text)
     except ValueError as e:
-        raise ProviderError(f"Invalid JSON response: {r.text[:500]}", retryable=True) from e
+        raise ProviderError(f"Invalid JSON response: {text[:500]}", retryable=True) from e
 
 
 # --------------------------------------------------------------------------- Ollama
@@ -75,7 +102,8 @@ def _ollama(model: dict, messages: list[dict], gen: dict) -> Completion:
     body.update(model.get("extra") or {})
 
     t0 = time.monotonic()
-    data = _post(f"{_ollama_base(model)}/api/chat", body, {}, model.get("timeout", 3600))
+    data = _post(f"{_ollama_base(model)}/api/chat", body, {}, model.get("timeout", 3600),
+                 model.get("max_duration"))
     dt = time.monotonic() - t0
     if "error" in data:
         raise ProviderError(f"Ollama error: {data['error']}", retryable=False)
@@ -115,7 +143,8 @@ def _openrouter(model: dict, messages: list[dict], gen: dict) -> Completion:
     headers = {"Authorization": f"Bearer {key}", "X-Title": "AI-Benchmarks"}
 
     t0 = time.monotonic()
-    data = _post(OPENROUTER_URL, body, headers, model.get("timeout", 900))
+    data = _post(OPENROUTER_URL, body, headers, model.get("timeout", 900),
+                 model.get("max_duration"))
     dt = time.monotonic() - t0
     if data.get("error"):
         err = data["error"]

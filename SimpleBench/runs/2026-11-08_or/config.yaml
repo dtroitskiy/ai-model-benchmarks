@@ -158,3 +158,31 @@ models:
       - cerebras/fp16
       allow_fallbacks: false
     added: '2026-11-08T02:25:25+01:00'
+  or-mimo-v2.6-flash:
+    timeout: 900
+    concurrency: 10
+    provider: openrouter
+    model: xiaomi/mimo-v2.6-flash
+    reasoning:
+      enabled: true
+    routing:
+      order:
+      - gmicloud/bf16
+      - xiaomi/fp8
+      - deepinfra/fp8
+      allow_fallbacks: false
+    added: '2026-11-08T09:20:48+01:00'
+  or-gemini-3.8-flash:
+    timeout: 600
+    max_duration: 1800
+    concurrency: 10
+    provider: openrouter
+    model: google/gemini-3.8-flash
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - google-ai-studio
+      - google-vertex/global
+      allow_fallbacks: false
+    added: '2026-11-08T10:33:09+01:00'

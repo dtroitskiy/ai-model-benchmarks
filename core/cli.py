@@ -38,7 +38,8 @@ def cmd_new(a) -> None:
                      question_ids=qids, models=models)
     print(f"Created benchmark '{a.name}' at {run.path}")
     if not a.no_run:
-        run_benchmark(run, concurrency=a.concurrency, order=a.order)
+        run_benchmark(run, concurrency=a.concurrency, order=a.order,
+                      max_duration=a.max_duration)
 
 
 def cmd_add(a) -> None:
@@ -46,13 +47,14 @@ def cmd_add(a) -> None:
     added = run.add_models(resolve(_csv(a.models)))
     print(f"Added to '{run.name}': {', '.join(added) or '(nothing new)'}")
     if added and not a.no_run:
-        run_benchmark(run, only_models=added, concurrency=a.concurrency, order=a.order)
+        run_benchmark(run, only_models=added, concurrency=a.concurrency, order=a.order,
+                      max_duration=a.max_duration)
 
 
 def cmd_run(a) -> None:
     run = Run.find(a.name, a.task)
     run_benchmark(run, only_models=_csv(a.models) or None, concurrency=a.concurrency,
-                  order=a.order)
+                  order=a.order, max_duration=a.max_duration)
 
 
 def cmd_extend(a) -> None:
@@ -64,7 +66,8 @@ def cmd_extend(a) -> None:
     else:
         print(f"'{run.name}': repeats {before} -> {a.repeats}")
     if not a.no_run:
-        run_benchmark(run, concurrency=a.concurrency, order=a.order)
+        run_benchmark(run, concurrency=a.concurrency, order=a.order,
+                      max_duration=a.max_duration)
 
 
 def cmd_report(a) -> None:
@@ -123,6 +126,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--no-run", action="store_true", help="only create, don't run yet")
     s.add_argument("--concurrency", type=int, help="parallel requests per OpenRouter model (default 4; a model's own lower value wins; Ollama unaffected)")
     s.add_argument("--order", choices=ORDERS, help="rounds: all models per repeat, leaderboard after each round; models: one model at a time (default: rounds if any Ollama model, else models)")
+    s.add_argument("--max-duration", type=float, metavar="SECONDS", help="total time limit per attempt for this session, overrides the models' max_duration; a reply that hits it counts as truncated")
     s.set_defaults(fn=cmd_new)
 
     s = sub.add_parser("add", help="add models to an existing benchmark and run only them")
@@ -132,6 +136,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--no-run", action="store_true")
     s.add_argument("--concurrency", type=int, help="parallel requests per OpenRouter model (default 4; a model's own lower value wins; Ollama unaffected)")
     s.add_argument("--order", choices=ORDERS, help="rounds: all models per repeat, leaderboard after each round; models: one model at a time (default: rounds if any Ollama model, else models)")
+    s.add_argument("--max-duration", type=float, metavar="SECONDS", help="total time limit per attempt for this session, overrides the models' max_duration; a reply that hits it counts as truncated")
     s.set_defaults(fn=cmd_add)
 
     s = sub.add_parser("run", help="run/resume pending attempts (also retries errors)")
@@ -140,6 +145,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--task")
     s.add_argument("--concurrency", type=int, help="parallel requests per OpenRouter model (default 4; a model's own lower value wins; Ollama unaffected)")
     s.add_argument("--order", choices=ORDERS, help="rounds: all models per repeat, leaderboard after each round; models: one model at a time (default: rounds if any Ollama model, else models)")
+    s.add_argument("--max-duration", type=float, metavar="SECONDS", help="total time limit per attempt for this session, overrides the models' max_duration; a reply that hits it counts as truncated")
     s.set_defaults(fn=cmd_run)
 
     s = sub.add_parser("extend", help="raise the number of repeats and run the new rounds")
@@ -149,6 +155,7 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("--no-run", action="store_true")
     s.add_argument("--concurrency", type=int, help="parallel requests per OpenRouter model (default 4; a model's own lower value wins; Ollama unaffected)")
     s.add_argument("--order", choices=ORDERS, help="rounds: all models per repeat, leaderboard after each round; models: one model at a time (default: rounds if any Ollama model, else models)")
+    s.add_argument("--max-duration", type=float, metavar="SECONDS", help="total time limit per attempt for this session, overrides the models' max_duration; a reply that hits it counts as truncated")
     s.set_defaults(fn=cmd_extend)
 
     s = sub.add_parser("report", help="rebuild and print the leaderboard")

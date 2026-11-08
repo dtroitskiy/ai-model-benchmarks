@@ -4,7 +4,7 @@ from __future__ import annotations
 import statistics
 from collections import Counter
 
-from .store import REPORT, Run, is_error, now_iso
+from .store import REPORT, REPORT_HTML, Run, is_error, now_iso
 from .task import Question, Task, get_task
 
 
@@ -19,7 +19,7 @@ def rescore(rec: dict, q: Question, task: Task) -> dict:
     if extracted is not None:
         status = "answered"
     else:
-        status = "truncated" if rec.get("finish_reason") == "length" else "unparsed"
+        status = "truncated" if rec.get("finish_reason") in ("length", "time_limit") else "unparsed"
     return {**rec, "extracted": extracted, "correct": extracted == q.answer, "status": status}
 
 
@@ -78,21 +78,35 @@ def _fmt_rounds(rounds: list[int], n: int) -> str:
     return f"{statistics.mean(rounds):.1f} ± {statistics.stdev(rounds):.1f}"
 
 
+NOTE_BODY = (
+    "unparsed and truncated replies (output token limit or `max_duration` reached) count as "
+    "wrong. Per round = mean ± SD of points per full pass over the questions. Majority vote = "
+    "questions where the correct letter was the single most common answer."
+)
+
+
 def _run_time_line(summary: str | None) -> str:
     if summary == "untracked":
         return "- Run time: untracked (benchmark created before session timing)"
     return f"- Run time: {summary or '–'} (wall time, pauses between sessions excluded)"
 
 
-def render(run: Run, questions: list[Question], live: dict | None = None) -> str:
+def compute_stats(run: Run, questions: list[Question]) -> list[dict]:
+    """Per-model stats from the re-scored latest records, best first."""
     task = get_task(run.config["task"])
     by_id = {q.id: q for q in questions}
     latest = {k: rescore(r, by_id[k[1]], task) if k[1] in by_id else r
               for k, r in run.latest().items()}
-    nq = len(questions)
-    cfg = run.config
     stats = [model_stats(run, a, questions, latest) for a in run.models]
     stats.sort(key=lambda s: (-s["pct"], -s["points"], s["alias"]))
+    return stats
+
+
+def render(run: Run, questions: list[Question], live: dict | None = None,
+           stats: list[dict] | None = None) -> str:
+    stats = stats if stats is not None else compute_stats(run, questions)
+    nq = len(questions)
+    cfg = run.config
 
     out = [f"# {cfg['task']} — {cfg['name']}", ""]
     gen = cfg.get("generation") or {}
@@ -137,9 +151,7 @@ def render(run: Run, questions: list[Question], live: dict | None = None) -> str
     out += [
         "",
         "_Score = points / scored attempts. Errors (API failures) are not scored and are retried "
-        "by `bench run`; unparsed and truncated replies count as wrong. Per round = mean ± SD of "
-        "points per full pass over the questions. Majority vote = questions where the correct "
-        "letter was the single most common answer._",
+        f"by `bench run`; {NOTE_BODY}_",
         "",
     ]
     return "\n".join(out)
@@ -147,9 +159,14 @@ def render(run: Run, questions: list[Question], live: dict | None = None) -> str
 
 def write_report(run: Run, questions: list[Question], quiet: bool = False,
                  live: dict | None = None) -> str:
-    text = render(run, questions, live)
+    from .report_html import render_html  # local import: report_html imports from here
+
+    stats = compute_stats(run, questions)
+    text = render(run, questions, live, stats)
     (run.path / REPORT).write_text(text, encoding="utf-8")
+    (run.path / REPORT_HTML).write_text(render_html(run, questions, stats, live),
+                                        encoding="utf-8")
     if not quiet:
         print(text)
-        print(f"Saved to {run.path / REPORT}")
+        print(f"Saved to {run.path / REPORT} and {REPORT_HTML}")
     return text

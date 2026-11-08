@@ -7,7 +7,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .control import StopControl
-from .providers import ProviderError, complete
+from .providers import ProviderError, TimeLimitExceeded, complete
 from .report import write_report
 from .store import Run, is_error, now_iso
 from .task import Question, Task, get_task
@@ -35,9 +35,15 @@ def _attempt(run: Run, task: Task, alias: str, model: dict, q: Question, attempt
         "ts": now_iso(), "model": alias, "question_id": q.id, "attempt": attempt,
         "expected": q.answer,
     }
+    t0 = time.monotonic()
     try:
         c = complete(model, task.build_messages(q, run.prompt), run.config["generation"],
                      log=lambda m: print(f"  [{alias}] Q{q.id} #{attempt}{m}", flush=True))
+    except TimeLimitExceeded as e:  # a runaway reply: counts as wrong, like hitting max tokens
+        rec.update(status="truncated", extracted=None, correct=False, content="",
+                   finish_reason="time_limit", error=str(e),
+                   duration_s=round(time.monotonic() - t0, 2))
+        return rec
     except ProviderError as e:
         rec.update(status="error", extracted=None, correct=False, error=str(e))
         return rec
@@ -97,7 +103,8 @@ def choose_order(run: Run, aliases: list[str], override: str | None) -> str:
 
 
 def run_benchmark(run: Run, only_models: list[str] | None = None,
-                  concurrency: int | None = None, order: str | None = None) -> None:
+                  concurrency: int | None = None, order: str | None = None,
+                  max_duration: float | None = None) -> None:
     task = get_task(run.config["task"])
     questions = load_run_questions(run, task)
     aliases = only_models or list(run.models)
@@ -110,7 +117,7 @@ def run_benchmark(run: Run, only_models: list[str] | None = None,
     session = None
     try:
         with StopControl(run.path) as stop:
-            session = _Session(run, task, questions, stop, concurrency)
+            session = _Session(run, task, questions, stop, concurrency, max_duration)
             print(f"Order: {order} ({run.config['repeats']} repeats, {len(aliases)} models)",
                   flush=True)
             if order == "rounds":
@@ -136,9 +143,11 @@ def run_benchmark(run: Run, only_models: list[str] | None = None,
 class _Session:
     """One `bench` invocation: executes attempts and tracks its wall time."""
 
-    def __init__(self, run: Run, task: Task, questions: list[Question], stop, concurrency):
+    def __init__(self, run: Run, task: Task, questions: list[Question], stop, concurrency,
+                 max_duration=None):
         self.run, self.task, self.questions, self.stop = run, task, questions, stop
         self.concurrency = concurrency
+        self.max_duration = max_duration  # session override of each model's max_duration
         self.started = now_iso()
         self.t0 = time.monotonic()
         self.attempts = 0
@@ -187,9 +196,12 @@ class _Session:
     def _batch(self, alias: str, items: list[tuple], header: str) -> bool:
         """Runs one model's attempts. Returns True if a stop request skipped any of them."""
         run, model = self.run, self.run.models[alias]
+        if self.max_duration:
+            model = {**model, "max_duration": self.max_duration}
         conc = effective_concurrency(model, self.concurrency)
+        limit = f", max {fmt_duration(model['max_duration'])}" if model.get("max_duration") else ""
         print(f"{header} {len(items)} attempts pending "
-              f"({model['provider']}: {model['model']}, concurrency {conc})", flush=True)
+              f"({model['provider']}: {model['model']}, concurrency {conc}{limit})", flush=True)
         t0 = time.monotonic()
         done = 0
         skipped = False

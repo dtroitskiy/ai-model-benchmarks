@@ -112,18 +112,19 @@ def _run_models(run, task, questions, repeats, aliases, finished, stop, concurre
         return _attempt(run, task, alias, model, q, a)
 
     try:
-        for alias in aliases:
+        for idx, alias in enumerate(aliases, 1):
             if stop.requested:
                 return True
             model = run.models[alias]
             # attempt-major order: a partial run still covers every question evenly
             pending = [(q, a) for a in range(1, repeats + 1) for q in questions
                        if (alias, q.id, a) not in finished]
+            tag = f"Model {idx}/{len(aliases)} [{alias}]"
             if not pending:
-                print(f"[{alias}] complete, nothing to do")
+                print(f"{tag} complete, nothing to do")
                 continue
             conc = effective_concurrency(model, concurrency)
-            print(f"[{alias}] {len(pending)} attempts pending "
+            print(f"\n{tag} {len(pending)} attempts pending "
                   f"({model['provider']}: {model['model']}, concurrency {conc})", flush=True)
             done = 0
             if conc <= 1:

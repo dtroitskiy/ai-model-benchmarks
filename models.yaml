@@ -41,6 +41,7 @@ models:
   ollama-gpt-oss-20b:            {provider: ollama, model: "gpt-oss:20b", think: high}
   ollama-lfm2.5-8b:              {provider: ollama, model: "lfm2.5:8b"}
   ollama-lfm2.5-24b:             {provider: ollama, model: "lfm2.5:24b"}
+  ollama-mimo-v2.6:              {provider: ollama, model: "mimo-v2.6:latest"}
   ollama-nemotron-3.5-lightning: {provider: ollama, model: "nemotron-3.5-lightning:latest"}
   ollama-ornith-1.5-9b:          {provider: ollama, model: "ornith-1.5:9b"}
   ollama-qwen3.8:                {provider: ollama, model: "qwen3.8:latest"}

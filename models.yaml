@@ -25,8 +25,9 @@ defaults:
   ollama:
     think: true
     timeout: 3600
+    max_duration: 3600  # stops reasoning loops; a reply still running then counts as truncated
     options:
-      num_ctx: 32768
+      num_ctx: 65536    # prompt + reasoning + answer; cloud replies up to ~96k tokens still finished
   openrouter:
     timeout: 600
     max_duration: 1800  # stops runaway reasoning loops (some hosts allow 900k+ output tokens)

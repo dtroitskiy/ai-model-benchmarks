@@ -1,0 +1,107 @@
+task: simplebench
+name: 2026-11-08_ollama
+created: '2026-11-08T10:00:45+01:00'
+dataset: SimpleBench/simple_bench_public.json
+dataset_sha256: 4ea0bb96b35f61c97dbf5a7dc059986398441f0cbb17fa709ae2b0e9ba4f76e4
+question_ids: null
+repeats: 1
+prompt_profile: one_letter
+system_prompt: null
+user_suffix: Answer with JUST ONE LETTER indicating an answer of your choice without an explanation of
+  your decision or any other text.
+generation:
+  temperature: null
+  max_tokens: null
+models:
+  ollama-bonsai-2-2b:
+    think: true
+    timeout: 3600
+    options: &id001
+      num_ctx: 32768
+    provider: ollama
+    model: bonsai-2:2b
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-bonsai-2-9b:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: bonsai-2:9b
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-bonsai-2-27b:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: bonsai-2:27b
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-flint:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: flint:latest
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-gemma4-e4b:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: gemma4:e4b
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-gemma4-26b:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: gemma4:26b
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-gpt-oss-20b:
+    think: high
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: gpt-oss:20b
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-lfm2.5-8b:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: lfm2.5:8b
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-lfm2.5-24b:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: lfm2.5:24b
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-mimo-v2.6:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: mimo-v2.6:latest
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-nemotron-3.5-lightning:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: nemotron-3.5-lightning:latest
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-ornith-1.5-9b:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: ornith-1.5:9b
+    added: '2026-11-08T10:00:45+01:00'
+  ollama-qwen3.8:
+    think: true
+    timeout: 3600
+    options: *id001
+    provider: ollama
+    model: qwen3.8:latest
+    added: '2026-11-08T10:00:45+01:00'

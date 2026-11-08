@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>simplebench — 2026-11-08_ollama</title>
+<style>
+:root {
+  --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e4e3df;
+  --accent: #2f6fdf; --accent-soft: #e6eefc; --warn: #b4530a; --bad: #b42318;
+  --bar: #2f6fdf; --bar-bg: #ecebe7; --best: #0f7b45; --best-soft: #e3f4ea;
+  --local: #7a4bd1; --local-soft: #efe8fb; --cloud: #0f7b9b; --cloud-soft: #e2f3f7;
+  --heat-l: 88%; --heat-text: #1d1d1b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413; --panel: #1d1d1b; --text: #ecebe7; --muted: #a09f99; --line: #33322f;
+    --accent: #7aa7f5; --accent-soft: #1f2a3d; --warn: #f0a35e; --bad: #f2867c;
+    --bar: #6f9cf0; --bar-bg: #2c2b28; --best: #5fcf94; --best-soft: #173527;
+    --local: #b79af0; --local-soft: #2a2140; --cloud: #6cc7df; --cloud-soft: #15313a;
+    --heat-l: 30%; --heat-text: #ecebe7;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141413; --panel: #1d1d1b; --text: #ecebe7; --muted: #a09f99; --line: #33322f;
+  --accent: #7aa7f5; --accent-soft: #1f2a3d; --warn: #f0a35e; --bad: #f2867c;
+  --bar: #6f9cf0; --bar-bg: #2c2b28; --best: #5fcf94; --best-soft: #173527;
+  --local: #b79af0; --local-soft: #2a2140; --cloud: #6cc7df; --cloud-soft: #15313a;
+  --heat-l: 30%; --heat-text: #ecebe7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1280px; margin: 0 auto; padding: 28px 16px 48px; }
+h1 { font-size: 22px; margin: 0 0 6px; }
+h2 { font-size: 16px; margin: 32px 0 10px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 13px; }
+.meta b { color: var(--text); font-weight: 600; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+th { font-size: 12px; font-weight: 600; color: var(--muted); text-align: right;
+  background: var(--panel); position: sticky; top: 0; }
+td { text-align: right; }
+th.l, td.l { text-align: left; }
+th.sortable { cursor: pointer; user-select: none; }
+th.sortable:hover { color: var(--text); }
+th.sorted::after { content: " ▾"; } th.sorted.asc::after { content: " ▴"; }
+tbody tr:hover td { background: var(--accent-soft); }
+.rank { color: var(--muted); width: 2em; }
+.model { font-weight: 600; }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 6px;
+  border-radius: 99px; margin-left: 6px; vertical-align: 1px; }
+.tag.local { color: var(--local); background: var(--local-soft); }
+.tag.cloud { color: var(--cloud); background: var(--cloud-soft); }
+.score { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.bar { width: 90px; height: 8px; border-radius: 4px; background: var(--bar-bg); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--bar); border-radius: 4px; }
+.best { color: var(--best); font-weight: 700; }
+td.best-cell { background: var(--best-soft); }
+.zero { color: var(--muted); opacity: .55; }
+.warn { color: var(--warn); font-weight: 600; }
+.bad { color: var(--bad); font-weight: 600; }
+.sub { color: var(--muted); font-size: 12px; }
+td.heat { text-align: center; color: var(--heat-text); min-width: 52px; }
+td.heat.empty { color: var(--muted); }
+code { font: 12px ui-monospace, "Cascadia Code", Consolas, monospace; }
+.settings { white-space: normal; color: var(--muted); font-size: 12px; text-align: left;
+  min-width: 320px; }
+.note { color: var(--muted); font-size: 12.5px; margin-top: 18px; max-width: 900px; }
+</style>
+</head>
+<body><main>
+<h1>simplebench — 2026-11-08_ollama</h1>
+<div class="meta"><span>Created: <b>2026-11-08 10:00</b></span><span>Updated: <b>2026-11-08 17:59</b></span><span>Questions: <b>10</b></span><span>Repeats: <b>1</b></span><span>Max points: <b>10</b></span><span>Prompt: <b>one_letter</b></span><span>Temperature: <b>None</b></span><span>Max tokens: <b>None</b></span><span>Run time: <b>7h 47m over 1 session</b></span></div>
+<h2>Leaderboard</h2>
+<div class="card"><table class="sortable-table">
+<thead><tr>
+<th class="sortable l">#</th>
+<th class="sortable l">Model</th>
+<th class="sortable ">Score</th>
+<th class="sortable ">Points</th>
+<th class="sortable ">Per round (of 10)</th>
+<th class="sortable ">Majority vote</th>
+<th class="sortable ">Unparsed</th>
+<th class="sortable ">Truncated</th>
+<th class="sortable ">Errors</th>
+<th class="sortable ">Avg time</th>
+<th class="sortable ">Avg out tok</th>
+<th class="sortable ">Cost</th>
+</tr></thead>
+<tbody>
+<tr><td class="l rank" data-v="1">1</td><td class="l"><span class="model">ollama-gemma4-26b</span><span class="tag local">local</span></td><td data-v="70.000" class=best-cell><div class="score"><span class="best">70.0%</span><span class="bar"><i style="width:70.0%"></i></span></div></td><td data-v="7">7/10</td><td data-v="7"><span class="best">7/10</span></td><td data-v="7"><span class="best">7/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="170.435">170.4s</td><td data-v="4404.7">4405</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="2">2</td><td class="l"><span class="model">ollama-bonsai-2-27b</span><span class="tag local">local</span></td><td data-v="60.000"><div class="score"><span class="">60.0%</span><span class="bar"><i style="width:60.0%"></i></span></div></td><td data-v="6">6/10</td><td data-v="6"><span class="">6/10</span></td><td data-v="6"><span class="">6/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="225.625">225.6s</td><td data-v="1247.6">1248</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="3">3</td><td class="l"><span class="model">ollama-qwen3.8</span><span class="tag local">local</span></td><td data-v="50.000"><div class="score"><span class="">50.0%</span><span class="bar"><i style="width:50.0%"></i></span></div></td><td data-v="5">5/10</td><td data-v="5"><span class="">5/10</span></td><td data-v="5"><span class="">5/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="206.177">206.2s</td><td data-v="787.9">788</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="4">4</td><td class="l"><span class="model">ollama-bonsai-2-9b</span><span class="tag local">local</span></td><td data-v="40.000"><div class="score"><span class="">40.0%</span><span class="bar"><i style="width:40.0%"></i></span></div></td><td data-v="4">4/10</td><td data-v="4"><span class="">4/10</span></td><td data-v="4"><span class="">4/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="70.728">70.7s</td><td data-v="5398.7">5399</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="5">5</td><td class="l"><span class="model">ollama-lfm2.5-8b</span><span class="tag local">local</span></td><td data-v="40.000"><div class="score"><span class="">40.0%</span><span class="bar"><i style="width:40.0%"></i></span></div></td><td data-v="4">4/10</td><td data-v="4"><span class="">4/10</span></td><td data-v="4"><span class="">4/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="23.489">23.5s</td><td data-v="3703.8">3704</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="6">6</td><td class="l"><span class="model">ollama-mimo-v2.6</span><span class="tag local">local</span></td><td data-v="40.000"><div class="score"><span class="">40.0%</span><span class="bar"><i style="width:40.0%"></i></span></div></td><td data-v="4">4/10</td><td data-v="4"><span class="">4/10</span></td><td data-v="4"><span class="">4/10</span></td><td data-v="0" class="zero">0</td><td data-v="2" class="warn">2</td><td data-v="0" class="zero">0</td><td data-v="497.029">497.0s</td><td data-v="7044.5">7044</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="7">7</td><td class="l"><span class="model">ollama-nemotron-3.5-lightning</span><span class="tag local">local</span></td><td data-v="40.000"><div class="score"><span class="">40.0%</span><span class="bar"><i style="width:40.0%"></i></span></div></td><td data-v="4">4/10</td><td data-v="4"><span class="">4/10</span></td><td data-v="4"><span class="">4/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="433.596">433.6s</td><td data-v="9300.4">9300</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="8">8</td><td class="l"><span class="model">ollama-bonsai-2-2b</span><span class="tag local">local</span></td><td data-v="20.000"><div class="score"><span class="">20.0%</span><span class="bar"><i style="width:20.0%"></i></span></div></td><td data-v="2">2/10</td><td data-v="2"><span class="">2/10</span></td><td data-v="2"><span class="">2/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="58.112">58.1s</td><td data-v="10313.0">10313</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="9">9</td><td class="l"><span class="model">ollama-flint</span><span class="tag local">local</span></td><td data-v="20.000"><div class="score"><span class="">20.0%</span><span class="bar"><i style="width:20.0%"></i></span></div></td><td data-v="2">2/10</td><td data-v="2"><span class="">2/10</span></td><td data-v="2"><span class="">2/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="97.073">97.1s</td><td data-v="3003.4">3003</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="10">10</td><td class="l"><span class="model">ollama-gemma4-e4b</span><span class="tag local">local</span></td><td data-v="20.000"><div class="score"><span class="">20.0%</span><span class="bar"><i style="width:20.0%"></i></span></div></td><td data-v="2">2/10</td><td data-v="2"><span class="">2/10</span></td><td data-v="2"><span class="">2/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="12.25">12.2s</td><td data-v="1037.8">1038</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="11">11</td><td class="l"><span class="model">ollama-ornith-1.5-9b</span><span class="tag local">local</span></td><td data-v="20.000"><div class="score"><span class="">20.0%</span><span class="bar"><i style="width:20.0%"></i></span></div></td><td data-v="2">2/10</td><td data-v="2"><span class="">2/10</span></td><td data-v="2"><span class="">2/10</span></td><td data-v="0" class="zero">0</td><td data-v="1" class="warn">1</td><td data-v="0" class="zero">0</td><td data-v="541.245">541.2s</td><td data-v="7500.3">7500</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="12">12</td><td class="l"><span class="model">ollama-gpt-oss-20b</span><span class="tag local">local</span></td><td data-v="10.000"><div class="score"><span class="">10.0%</span><span class="bar"><i style="width:10.0%"></i></span></div></td><td data-v="1">1/10</td><td data-v="1"><span class="">1/10</span></td><td data-v="1"><span class="">1/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="311.534">311.5s</td><td data-v="7644.6">7645</td><td data-v="NaN">–</td></tr>
+<tr><td class="l rank" data-v="13">13</td><td class="l"><span class="model">ollama-lfm2.5-24b</span><span class="tag local">local</span></td><td data-v="10.000"><div class="score"><span class="">10.0%</span><span class="bar"><i style="width:10.0%"></i></span></div></td><td data-v="1">1/10</td><td data-v="1"><span class="">1/10</span></td><td data-v="1"><span class="">1/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="154.44">154.4s</td><td data-v="5508.7">5509</td><td data-v="NaN">–</td></tr>
+</tbody></table></div>
+<h2>Per question <span class=sub>(correct / attempts)</span></h2>
+<div class="card"><table class="sortable-table"><thead><tr>
+<th class="sortable l">Model</th>
+<th class="sortable" style="text-align:center">Q1 <span class="sub">(B)</span></th>
+<th class="sortable" style="text-align:center">Q2 <span class="sub">(A)</span></th>
+<th class="sortable" style="text-align:center">Q3 <span class="sub">(A)</span></th>
+<th class="sortable" style="text-align:center">Q4 <span class="sub">(C)</span></th>
+<th class="sortable" style="text-align:center">Q5 <span class="sub">(B)</span></th>
+<th class="sortable" style="text-align:center">Q6 <span class="sub">(A)</span></th>
+<th class="sortable" style="text-align:center">Q7 <span class="sub">(C)</span></th>
+<th class="sortable" style="text-align:center">Q8 <span class="sub">(F)</span></th>
+<th class="sortable" style="text-align:center">Q9 <span class="sub">(A)</span></th>
+<th class="sortable" style="text-align:center">Q10 <span class="sub">(B)</span></th>
+</tr></thead><tbody>
+<tr><td class="l model">ollama-gemma4-26b</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td></tr>
+<tr><td class="l model">ollama-bonsai-2-27b</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-qwen3.8</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-bonsai-2-9b</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-lfm2.5-8b</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-mimo-v2.6</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-nemotron-3.5-lightning</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-bonsai-2-2b</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-flint</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-gemma4-e4b</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-ornith-1.5-9b</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-gpt-oss-20b</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+<tr><td class="l model">ollama-lfm2.5-24b</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="1 of 1 correct">1/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 1 correct">0/1</td></tr>
+</tbody></table></div>
+<h2>Models</h2>
+<div class="card"><table><thead><tr>
+<th class="l">Model</th><th class="l">Provider</th><th class="l">Model id</th>
+<th class="l">Settings</th></tr></thead><tbody>
+<tr><td class="l model">ollama-gemma4-26b</td><td class="l">ollama</td><td class="l"><code>gemma4:26b</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-bonsai-2-27b</td><td class="l">ollama</td><td class="l"><code>bonsai-2:27b</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-qwen3.8</td><td class="l">ollama</td><td class="l"><code>qwen3.8:latest</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-bonsai-2-9b</td><td class="l">ollama</td><td class="l"><code>bonsai-2:9b</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-lfm2.5-8b</td><td class="l">ollama</td><td class="l"><code>lfm2.5:8b</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-mimo-v2.6</td><td class="l">ollama</td><td class="l"><code>mimo-v2.6:latest</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-nemotron-3.5-lightning</td><td class="l">ollama</td><td class="l"><code>nemotron-3.5-lightning:latest</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-bonsai-2-2b</td><td class="l">ollama</td><td class="l"><code>bonsai-2:2b</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-flint</td><td class="l">ollama</td><td class="l"><code>flint:latest</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-gemma4-e4b</td><td class="l">ollama</td><td class="l"><code>gemma4:e4b</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-ornith-1.5-9b</td><td class="l">ollama</td><td class="l"><code>ornith-1.5:9b</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-gpt-oss-20b</td><td class="l">ollama</td><td class="l"><code>gpt-oss:20b</code></td><td class="settings">think=high, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+<tr><td class="l model">ollama-lfm2.5-24b</td><td class="l">ollama</td><td class="l"><code>lfm2.5:24b</code></td><td class="settings">think=True, timeout=3600, options={&#x27;num_ctx&#x27;: 32768}</td></tr>
+</tbody></table></div>
+<p class="note">Score = points / scored attempts. Errors (API failures) are not scored and are retried by bench run; unparsed and truncated replies (output token limit or max_duration reached) count as wrong. Per round = mean ± SD of points per full pass over the questions. Majority vote = questions where the correct letter was the single most common answer. Click a column header to sort.</p>
+<script>
+document.querySelectorAll("table.sortable-table").forEach(table => {
+  const heads = table.querySelectorAll("th.sortable");
+  heads.forEach((th, idx) => th.addEventListener("click", () => {
+    const col = [...th.parentNode.children].indexOf(th);
+    const asc = th.classList.contains("sorted") && !th.classList.contains("asc");
+    heads.forEach(h => h.classList.remove("sorted", "asc"));
+    th.classList.add("sorted"); if (asc) th.classList.add("asc");
+    const body = table.tBodies[0];
+    const rows = [...body.rows];
+    const key = r => { const c = r.children[col]; const v = c.dataset.v;
+      return v === undefined ? c.textContent.trim().toLowerCase() : parseFloat(v); };
+    rows.sort((a, b) => { const x = key(a), y = key(b);
+      if (typeof x === "number" && typeof y === "number") {
+        if (isNaN(x)) return 1; if (isNaN(y)) return -1; return asc ? x - y : y - x; }
+      return asc ? String(y).localeCompare(String(x)) : String(x).localeCompare(String(y)); });
+    rows.forEach(r => body.appendChild(r));
+  }));
+});
+</script>
+</main></body></html>

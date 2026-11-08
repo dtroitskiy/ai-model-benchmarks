@@ -7,7 +7,7 @@ default: one_letter
 profiles:
   one_letter:
     system: null
-    suffix: "Answer with JUST ONE LETTER indicating the answer of your choice, without any other text."
+    suffix: "Answer with JUST ONE LETTER indicating an answer of your choice without an explanation of your decision or any other text."
 
   final_answer:
     system: >-

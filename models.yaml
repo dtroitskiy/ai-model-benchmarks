@@ -34,6 +34,7 @@ models:
   ollama-bonsai-2-2b:            {provider: ollama, model: "bonsai-2:2b"}
   ollama-bonsai-2-9b:            {provider: ollama, model: "bonsai-2:9b"}
   ollama-bonsai-2-27b:           {provider: ollama, model: "bonsai-2:27b"}
+  ollama-flint:                  {provider: ollama, model: "flint:latest"}
   ollama-gemma4-e4b:             {provider: ollama, model: "gemma4:e4b"}
   ollama-gemma4-26b:             {provider: ollama, model: "gemma4:26b"}
   ollama-gpt-oss-20b:            {provider: ollama, model: "gpt-oss:20b", think: high}
@@ -54,12 +55,30 @@ models:
   or-bonsai-2-27b:               # single host
     {provider: openrouter, model: "prism-ml/ternary-bonsai-2-27b", reasoning: {effort: high},
      routing: {order: ["darkbloom/int4"], allow_fallbacks: false}}
+  or-claude-haiku-5.5:           # proprietary: identical weights on every host, so several are listed
+    {provider: openrouter, model: "anthropic/claude-haiku-5.5", reasoning: {effort: high},
+     routing: {order: ["anthropic", "amazon-bedrock", "google-vertex/global"], allow_fallbacks: false}}
+  or-flint:                      # free tier: rate limited (~20 req/min, daily cap), single host
+    {provider: openrouter, model: "recursive/flint-v1.0:free", reasoning: {enabled: true},
+     concurrency: 2, routing: {order: ["recursive/bf16"], allow_fallbacks: false}}
+  or-gemini-3.8-flash:           # proprietary; "google-ai-studio/flex" is half price but may queue
+    {provider: openrouter, model: "google/gemini-3.8-flash", reasoning: {effort: high},
+     routing: {order: ["google-ai-studio", "google-vertex/global"], allow_fallbacks: false}}
   or-gemma-4-26b:
     {provider: openrouter, model: "google/gemma-4-26b-a4b-it", reasoning: {enabled: true},
      routing: {order: ["coreweave/bf16", "parasail/bf16", "novita/bf16"], allow_fallbacks: false}}
+  or-glm-5.3-flash:              # no bf16 hosts; fp8 from Z.ai itself first (cheapest hosts are fp4)
+    {provider: openrouter, model: "z-ai/glm-5.3-flash", reasoning: {effort: high},
+     routing: {order: ["z-ai/fp8", "baseten/fp8", "novita/fp8"], allow_fallbacks: false}}
+  or-gpt-6-luna:               # proprietary; "openai/flex" is half price but may queue
+    {provider: openrouter, model: "openai/gpt-6-luna", reasoning: {effort: high},
+     routing: {order: ["openai", "azure"], allow_fallbacks: false}}
   or-gpt-oss-20b:
     {provider: openrouter, model: "openai/gpt-oss-20b", reasoning: {effort: high},
      routing: {order: ["deepinfra/bf16", "dekallm/bf16"], allow_fallbacks: false}}
+  or-gpt-oss-120b:
+    {provider: openrouter, model: "openai/gpt-oss-120b", reasoning: {effort: high},
+     routing: {order: ["deepinfra/bf16", "dekallm/bf16", "crusoe/bf16"], allow_fallbacks: false}}
   or-lfm2.5-24b:                 # single host (Liquid itself); NOTE max output only 8192 tokens
     {provider: openrouter, model: "liquid/lfm-2.5-24b-a2b", reasoning: {enabled: true},
      routing: {order: ["liquid/fp8"], allow_fallbacks: false}}

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .registry import load_registry, resolve
 from .report import write_report
+from .control import STOP_FILE
 from .runner import load_run_questions, run_benchmark
 from .store import CONFIG, Run
 from .task import all_tasks, get_task
@@ -56,6 +57,13 @@ def cmd_run(a) -> None:
 def cmd_report(a) -> None:
     run = Run.find(a.name, a.task)
     write_report(run, load_run_questions(run, get_task(run.config["task"])))
+
+
+def cmd_stop(a) -> None:
+    run = Run.find(a.name, a.task)
+    (run.path / STOP_FILE).touch()
+    print(f"Stop requested for '{run.name}'. It stops once the current attempt(s) finish "
+          f"(only if it's running now; the request is cleared on the next start).")
 
 
 def cmd_list(a) -> None:
@@ -119,6 +127,11 @@ def main(argv: list[str] | None = None) -> None:
     s.add_argument("name")
     s.add_argument("--task")
     s.set_defaults(fn=cmd_report)
+
+    s = sub.add_parser("stop", help="stop a running benchmark after its current attempt(s)")
+    s.add_argument("name")
+    s.add_argument("--task")
+    s.set_defaults(fn=cmd_stop)
 
     sub.add_parser("list", help="list benchmarks").set_defaults(fn=cmd_list)
     sub.add_parser("models", help="list models in models.yaml").set_defaults(fn=cmd_models)

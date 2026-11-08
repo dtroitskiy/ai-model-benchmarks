@@ -24,7 +24,10 @@ uv run bench add 2026-11-baseline --models gpt-oss-20b # tests only the new mode
 uv run bench run 2026-11-baseline                      # resume after Ctrl+C / retry API errors
 uv run bench report 2026-11-baseline                   # rebuild leaderboard.md
 uv run bench list                                      # all benchmarks and their progress
+uv run bench stop 2026-11-baseline                     # from another terminal: stop after current attempt(s)
 ```
+While a benchmark runs, press `q` to stop once the attempt(s) in progress finish (press `q` again
+to cancel). Ctrl+C aborts immediately and loses the attempts in progress.
 `new` options: `--profile final_answer`, `--temperature 0.7`, `--max-tokens N`,
 `--questions 1,2,3`, `--no-run`.
 

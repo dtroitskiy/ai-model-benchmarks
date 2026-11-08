@@ -1,0 +1,96 @@
+task: simplebench
+name: '2026-11-07'
+created: '2026-11-07T18:17:38+01:00'
+dataset: SimpleBench/simple_bench_public.json
+dataset_sha256: 4ea0bb96b35f61c97dbf5a7dc059986398441f0cbb17fa709ae2b0e9ba4f76e4
+question_ids: null
+repeats: 5
+prompt_profile: one_letter
+system_prompt: null
+user_suffix: Answer with JUST ONE LETTER indicating the answer of your choice, without any other text.
+generation:
+  temperature: null
+  max_tokens: null
+models:
+  or-bonsai-2-9b:
+    timeout: 900
+    provider: openrouter
+    model: prism-ml/ternary-bonsai-2-9b
+    reasoning:
+      enabled: true
+    routing:
+      order:
+      - darkbloom/int4
+      allow_fallbacks: false
+    added: '2026-11-07T18:17:38+01:00'
+  or-bonsai-2-27b:
+    timeout: 900
+    provider: openrouter
+    model: prism-ml/ternary-bonsai-2-27b
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - darkbloom/int4
+      allow_fallbacks: false
+    added: '2026-11-07T18:17:38+01:00'
+  or-gemma-4-26b:
+    timeout: 900
+    provider: openrouter
+    model: google/gemma-4-26b-a4b-it
+    reasoning:
+      enabled: true
+    routing:
+      order:
+      - coreweave/bf16
+      - parasail/bf16
+      - novita/bf16
+      allow_fallbacks: false
+    added: '2026-11-07T18:17:38+01:00'
+  or-gpt-oss-20b:
+    timeout: 900
+    provider: openrouter
+    model: openai/gpt-oss-20b
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - deepinfra/bf16
+      - dekallm/bf16
+      allow_fallbacks: false
+    added: '2026-11-07T18:17:38+01:00'
+  or-lfm2.5-24b:
+    timeout: 900
+    provider: openrouter
+    model: liquid/lfm-2.5-24b-a2b
+    reasoning:
+      enabled: true
+    routing:
+      order:
+      - liquid/fp8
+      allow_fallbacks: false
+    added: '2026-11-07T18:17:38+01:00'
+  or-nemotron-3.5-lightning:
+    timeout: 900
+    provider: openrouter
+    model: nvidia/nemotron-3.5-lightning
+    reasoning:
+      enabled: true
+    routing:
+      order:
+      - coreweave/bf16
+      - deepinfra/bf16
+      allow_fallbacks: false
+    added: '2026-11-07T18:17:38+01:00'
+  or-qwen3.8:
+    timeout: 900
+    provider: openrouter
+    model: qwen/qwen3.8-27b
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - deepinfra/bf16
+      - cerebras/fp16
+      allow_fallbacks: false
+    added: '2026-11-07T18:17:38+01:00'

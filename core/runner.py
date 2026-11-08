@@ -5,6 +5,7 @@ import os
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from .control import StopControl
 from .providers import ProviderError, complete
 from .report import write_report
 from .store import Run, now_iso
@@ -79,8 +80,27 @@ def run_benchmark(run: Run, only_models: list[str] | None = None) -> None:
         raise SystemExit(f"Not in benchmark '{run.name}': {', '.join(unknown)}")
 
     finished = {k for k, r in run.latest().items() if r["status"] != "error"}
+    with StopControl(run.path) as stop:
+        stopped = _run_models(run, task, questions, repeats, aliases, finished, stop)
+    if stopped:
+        print(f"\nStopped. Finished attempts are saved; 'bench run {run.name}' resumes the rest.\n")
+    else:
+        print()
+    write_report(run, questions)
+
+
+def _run_models(run, task, questions, repeats, aliases, finished, stop) -> bool:
+    """Returns True if stopped early by a graceful stop request."""
+
+    def guarded(alias, model, q, a):
+        if stop.requested:  # checked when a worker picks the attempt up, not when queued
+            return None
+        return _attempt(run, task, alias, model, q, a)
+
     try:
         for alias in aliases:
+            if stop.requested:
+                return True
             model = run.models[alias]
             # attempt-major order: a partial run still covers every question evenly
             pending = [(q, a) for a in range(1, repeats + 1) for q in questions
@@ -91,24 +111,31 @@ def run_benchmark(run: Run, only_models: list[str] | None = None) -> None:
             conc = model.get("concurrency") or DEFAULT_CONCURRENCY[model["provider"]]
             print(f"[{alias}] {len(pending)} attempts pending "
                   f"({model['provider']}: {model['model']}, concurrency {conc})", flush=True)
+            done = 0
             if conc <= 1:
-                for i, (q, a) in enumerate(pending, 1):
+                for q, a in pending:
+                    if stop.requested:
+                        return True
                     rec = _attempt(run, task, alias, model, q, a)
                     run.append(rec)
-                    print(_line(rec, i, len(pending)), flush=True)
+                    done += 1
+                    print(_line(rec, done, len(pending)), flush=True)
             else:
                 with ThreadPoolExecutor(conc) as ex:
-                    futs = [ex.submit(_attempt, run, task, alias, model, q, a) for q, a in pending]
-                    for i, f in enumerate(as_completed(futs), 1):
+                    futs = [ex.submit(guarded, alias, model, q, a) for q, a in pending]
+                    for f in as_completed(futs):
                         rec = f.result()
+                        if rec is None:
+                            continue
                         run.append(rec)
-                        print(_line(rec, i, len(pending)), flush=True)
+                        done += 1
+                        print(_line(rec, done, len(pending)), flush=True)
+                if stop.requested:
+                    return True
     except KeyboardInterrupt:
         print("\nInterrupted. Finished attempts are saved; 'bench run "
               f"{run.name}' resumes the rest.", flush=True)
         write_report(run, questions, quiet=True)
         sys.stdout.flush()
         os._exit(130)  # don't wait for in-flight HTTP requests
-
-    print()
-    write_report(run, questions)
+    return False

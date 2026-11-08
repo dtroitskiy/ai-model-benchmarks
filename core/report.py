@@ -5,7 +5,22 @@ import statistics
 from collections import Counter
 
 from .store import REPORT, Run, now_iso
-from .task import Question
+from .task import Question, Task, get_task
+
+
+def rescore(rec: dict, q: Question, task: Task) -> dict:
+    """Re-extract the answer from the stored reply with the current parser.
+
+    Keeps results.jsonl untouched while letting parser fixes apply to old attempts.
+    """
+    if rec["status"] == "error":
+        return rec
+    extracted = task.extract(rec.get("content") or "", q)
+    if extracted is not None:
+        status = "answered"
+    else:
+        status = "truncated" if rec.get("finish_reason") == "length" else "unparsed"
+    return {**rec, "extracted": extracted, "correct": extracted == q.answer, "status": status}
 
 
 def model_stats(run: Run, alias: str, questions: list[Question], latest: dict) -> dict:
@@ -64,7 +79,10 @@ def _fmt_rounds(rounds: list[int], n: int) -> str:
 
 
 def render(run: Run, questions: list[Question]) -> str:
-    latest = run.latest()
+    task = get_task(run.config["task"])
+    by_id = {q.id: q for q in questions}
+    latest = {k: rescore(r, by_id[k[1]], task) if k[1] in by_id else r
+              for k, r in run.latest().items()}
     nq = len(questions)
     cfg = run.config
     stats = [model_stats(run, a, questions, latest) for a in run.models]

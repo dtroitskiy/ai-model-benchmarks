@@ -73,6 +73,10 @@ def extract_choice(text: str, letters: list[str]) -> str | None:
     # 1. The whole reply is just the letter (possibly decorated: **B**, (B), "B.", `B`)
     if m := re.fullmatch(rf"{_OPEN}({cls}){_CLOSE}", t):
         return m[1]
+    # 1b. Explanation followed by the letter alone on the last line
+    last = t.splitlines()[-1] if t else ""
+    if m := re.fullmatch(rf"{_OPEN}({cls}){_CLOSE}", last):
+        return m[1]
     # 2. Explicit answer markers, last occurrence wins
     for pat in (
         rf"\\boxed\{{\s*(?:\\text\{{)?\s*({cls})\b",

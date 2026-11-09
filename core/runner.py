@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import sys
 import time
+from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .control import StopControl
@@ -38,7 +39,7 @@ def _attempt(run: Run, task: Task, alias: str, model: dict, q: Question, attempt
     t0 = time.monotonic()
     try:
         c = complete(model, task.build_messages(q, run.prompt), run.config["generation"],
-                     log=lambda m: print(f"  [{alias}] Q{q.id} #{attempt}{m}", flush=True))
+                     log=lambda m: print(f"{_ts()}  [{alias}] Q{q.id} #{attempt}{m}", flush=True))
     except TimeLimitExceeded as e:  # a runaway reply: counts as wrong, like hitting max tokens
         rec.update(status="truncated", extracted=None, correct=False, content="",
                    finish_reason="time_limit", error=str(e),
@@ -62,8 +63,13 @@ def _attempt(run: Run, task: Task, alias: str, model: dict, q: Question, attempt
     return rec
 
 
+def _ts() -> str:
+    """Clock time prefix for progress lines, so the gap since the previous line is visible."""
+    return datetime.now().strftime("%H:%M:%S")
+
+
 def _line(rec: dict, done: int, total: int) -> str:
-    head = f"  [{rec['model']}] {done}/{total}  Q{rec['question_id']} #{rec['attempt']}: "
+    head = f"{_ts()}  [{rec['model']}] {done}/{total}  Q{rec['question_id']} #{rec['attempt']}: "
     st = rec["status"]
     if st == "error":
         return head + f"ERROR {rec['error'][:150]}"
@@ -169,7 +175,8 @@ class _Session:
             if not pending:
                 print(f"{tag} complete, nothing to do")
                 continue
-            if self._batch(alias, pending, f"\n{tag}"):
+            print()
+            if self._batch(alias, pending, tag):
                 return True
         return False
 
@@ -181,14 +188,14 @@ class _Session:
             if not any(items for _, items in work):
                 print(f"Round {a}/{repeats} complete, nothing to do")
                 continue
-            print(f"\n=== Round {a}/{repeats} ===", flush=True)
+            print(f"\n{_ts()} === Round {a}/{repeats} ===", flush=True)
             for idx, (alias, items) in enumerate(work, 1):
                 if self.stop.requested:
                     return True
                 if items and self._batch(alias, items, f"Model {idx}/{len(aliases)} [{alias}]"):
                     return True
             self.report()
-            print(f"=== Round {a}/{repeats} done · {self.since_start()} since start · "
+            print(f"{_ts()} === Round {a}/{repeats} done · {self.since_start()} since start · "
                   f"leaderboard updated ===", flush=True)
         return False
 
@@ -200,7 +207,7 @@ class _Session:
             model = {**model, "max_duration": self.max_duration}
         conc = effective_concurrency(model, self.concurrency)
         limit = f", max {fmt_duration(model['max_duration'])}" if model.get("max_duration") else ""
-        print(f"{header} {len(items)} attempts pending "
+        print(f"{_ts()} {header} {len(items)} attempts pending "
               f"({model['provider']}: {model['model']}, concurrency {conc}{limit})", flush=True)
         t0 = time.monotonic()
         done = 0
@@ -235,7 +242,7 @@ class _Session:
             finally:
                 ex.shutdown(wait=False, cancel_futures=True)
         if done:
-            print(f"  [{alias}] {done} attempts in {fmt_duration(time.monotonic() - t0)} · "
+            print(f"{_ts()}  [{alias}] {done} attempts in {fmt_duration(time.monotonic() - t0)} · "
                   f"{self.since_start()} since start", flush=True)
         if not skipped:
             self.report()  # keep leaderboard.md current

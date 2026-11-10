@@ -4,7 +4,7 @@ created: '2026-11-08T10:00:45+01:00'
 dataset: SimpleBench/simple_bench_public.json
 dataset_sha256: 4ea0bb96b35f61c97dbf5a7dc059986398441f0cbb17fa709ae2b0e9ba4f76e4
 question_ids: null
-repeats: 1
+repeats: 2
 prompt_profile: one_letter
 system_prompt: null
 user_suffix: Answer with JUST ONE LETTER indicating an answer of your choice without an explanation of

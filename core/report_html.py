@@ -74,6 +74,9 @@ code { font: 12px ui-monospace, "Cascadia Code", Consolas, monospace; }
 .settings { white-space: normal; color: var(--muted); font-size: 12px; text-align: left;
   min-width: 320px; }
 .note { color: var(--muted); font-size: 12.5px; margin-top: 18px; max-width: 900px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a.home { display: inline-block; font-size: 13px; margin-bottom: 10px; }
 """
 
 SORT_JS = """
@@ -119,7 +122,10 @@ def _heat(c: int, n: int) -> str:
 
 
 def render_html(run: Run, questions: list[Question], stats: list[dict],
-                live: dict | None = None) -> str:
+                live: dict | None = None, updated: str | None = None,
+                home_href: str | None = None) -> str:
+    """`updated` replaces the current time (the site uses the last result's time);
+    `home_href` adds a link back to the site's home page."""
     cfg = run.config
     nq = len(questions)
     gen = cfg.get("generation") or {}
@@ -133,7 +139,7 @@ def render_html(run: Run, questions: list[Question], stats: list[dict],
 
     meta = [
         ("Created", cfg["created"][:16].replace("T", " ")),
-        ("Updated", now_iso()[:16].replace("T", " ")),
+        ("Updated", (updated or now_iso())[:16].replace("T", " ")),
         ("Questions", str(nq)), ("Repeats", str(cfg["repeats"])),
         ("Max points", str(nq * cfg["repeats"])), ("Prompt", cfg["prompt_profile"]),
         ("Temperature", str(gen.get("temperature"))), ("Max tokens", str(gen.get("max_tokens"))),
@@ -143,6 +149,7 @@ def render_html(run: Run, questions: list[Question], stats: list[dict],
         "<!doctype html>", '<html lang="en">', "<head>", '<meta charset="utf-8">',
         '<meta name="viewport" content="width=device-width, initial-scale=1">',
         f"<title>{escape(title)}</title>", f"<style>{CSS}</style>", "</head>", "<body><main>",
+        (f'<a class="home" href="{escape(home_href)}">← All benchmarks</a>' if home_href else ""),
         f"<h1>{escape(title)}</h1>",
         '<div class="meta">' + "".join(f"<span>{k}: <b>{escape(v)}</b></span>" for k, v in meta)
         + "</div>",

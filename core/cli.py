@@ -103,6 +103,12 @@ def cmd_list(a) -> None:
         print("No benchmarks yet. Create one with 'bench new <name> --models ...'.")
 
 
+def cmd_site(a) -> None:
+    from .site import build_site
+
+    build_site(Path(a.out))
+
+
 def cmd_models(a) -> None:
     for alias, m in load_registry().items():
         print(f"{alias:28} {m['provider']:11} {m['model']}")
@@ -169,6 +175,9 @@ def main(argv: list[str] | None = None) -> None:
     s.set_defaults(fn=cmd_stop)
 
     sub.add_parser("list", help="list benchmarks").set_defaults(fn=cmd_list)
+    s = sub.add_parser("site", help="build the static site (GitHub Pages) into a folder")
+    s.add_argument("--out", default="_site", help="output folder (default: _site)")
+    s.set_defaults(fn=cmd_site)
     sub.add_parser("models", help="list models in models.yaml").set_defaults(fn=cmd_models)
 
     args = p.parse_args(argv)

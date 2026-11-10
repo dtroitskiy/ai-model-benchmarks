@@ -28,6 +28,7 @@ uv run bench run 2026-11-baseline                      # resume after Ctrl+C / r
 uv run bench extend 2026-11-baseline --repeats 4       # raise repeats to 4 total and run the new rounds
 uv run bench report 2026-11-baseline                   # rebuild leaderboard.md
 uv run bench list                                      # all benchmarks and their progress
+uv run bench site                                      # build the website into _site/ (preview locally)
 uv run bench stop 2026-11-baseline                     # from another terminal: stop after current attempt(s)
 ```
 While a benchmark runs, press `q` to stop once the attempt(s) in progress finish (press `q` again
@@ -57,6 +58,12 @@ OpenRouter keeps sending keep-alive bytes while a model generates. `max_duration
 default: 1800 s) limits an attempt's total time, so a reasoning loop can't stall a run. A reply that
 hits it counts as truncated and is not retried. Model settings are frozen per benchmark, so for an
 existing one pass `--max-duration SECONDS` to `run`, `add`, `extend` or `new`.
+
+**Website.** `.github/workflows/pages.yml` publishes the leaderboards to GitHub Pages on every
+push to `main`: a home page listing all benchmarks, and one page per benchmark at
+`<task>/<benchmark>/` (for example `simplebench/2026-11-08_or/`). It builds from committed results
+only, needs no API key, and publishes only the HTML pages, not `results.jsonl`. Benchmarks whose
+name starts with `_` are left out. One-time setup: Settings → Pages → Source: GitHub Actions.
 
 Each question attempt is a separate request with no shared history. A new benchmark never touches
 existing ones. To change the prompt, repeats or temperature, create a new benchmark.

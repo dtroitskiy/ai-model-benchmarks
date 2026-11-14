@@ -146,7 +146,7 @@ models:
       - deepinfra/bf16
       allow_fallbacks: false
     added: '2026-11-08T02:25:25+01:00'
-  or-qwen3.8:
+  or-qwen3.8-27b:
     timeout: 900
     provider: openrouter
     model: qwen/qwen3.8-27b
@@ -186,3 +186,18 @@ models:
       - google-vertex/global
       allow_fallbacks: false
     added: '2026-11-08T10:33:09+01:00'
+  or-deepseek-v4.1-flash:
+    timeout: 600
+    max_duration: 1800
+    concurrency: 10
+    provider: openrouter
+    model: deepseek/deepseek-v4.1-flash
+    reasoning:
+      effort: high
+    routing:
+      order:
+      - deepinfra/fp8
+      - coreweave/fp8
+      - novita/fp8
+      allow_fallbacks: false
+    added: '2026-11-14T11:49:30+01:00'

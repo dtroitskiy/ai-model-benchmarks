@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>simplebench — 2026-11-07</title>
+<style>
+:root {
+  --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e4e3df;
+  --accent: #2f6fdf; --accent-soft: #e6eefc; --warn: #b4530a; --bad: #b42318;
+  --bar: #2f6fdf; --bar-bg: #ecebe7; --best: #0f7b45; --best-soft: #e3f4ea;
+  --local: #7a4bd1; --local-soft: #efe8fb; --cloud: #0f7b9b; --cloud-soft: #e2f3f7;
+  --heat-l: 88%; --heat-text: #1d1d1b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141413; --panel: #1d1d1b; --text: #ecebe7; --muted: #a09f99; --line: #33322f;
+    --accent: #7aa7f5; --accent-soft: #1f2a3d; --warn: #f0a35e; --bad: #f2867c;
+    --bar: #6f9cf0; --bar-bg: #2c2b28; --best: #5fcf94; --best-soft: #173527;
+    --local: #b79af0; --local-soft: #2a2140; --cloud: #6cc7df; --cloud-soft: #15313a;
+    --heat-l: 30%; --heat-text: #ecebe7;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141413; --panel: #1d1d1b; --text: #ecebe7; --muted: #a09f99; --line: #33322f;
+  --accent: #7aa7f5; --accent-soft: #1f2a3d; --warn: #f0a35e; --bad: #f2867c;
+  --bar: #6f9cf0; --bar-bg: #2c2b28; --best: #5fcf94; --best-soft: #173527;
+  --local: #b79af0; --local-soft: #2a2140; --cloud: #6cc7df; --cloud-soft: #15313a;
+  --heat-l: 30%; --heat-text: #ecebe7;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1280px; margin: 0 auto; padding: 28px 16px 48px; }
+h1 { font-size: 22px; margin: 0 0 6px; }
+h2 { font-size: 16px; margin: 32px 0 10px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 13px; }
+.meta b { color: var(--text); font-weight: 600; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+th { font-size: 12px; font-weight: 600; color: var(--muted); text-align: right;
+  background: var(--panel); position: sticky; top: 0; }
+td { text-align: right; }
+th.l, td.l { text-align: left; }
+th.sortable { cursor: pointer; user-select: none; }
+th.sortable:hover { color: var(--text); }
+th.sorted::after { content: " ▾"; } th.sorted.asc::after { content: " ▴"; }
+tbody tr:hover td { background: var(--accent-soft); }
+.rank { color: var(--muted); width: 2em; }
+.model { font-weight: 600; }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 6px;
+  border-radius: 99px; margin-left: 6px; vertical-align: 1px; }
+.tag.local { color: var(--local); background: var(--local-soft); }
+.tag.cloud { color: var(--cloud); background: var(--cloud-soft); }
+.score { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.bar { width: 90px; height: 8px; border-radius: 4px; background: var(--bar-bg); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--bar); border-radius: 4px; }
+.best { color: var(--best); font-weight: 700; }
+td.best-cell { background: var(--best-soft); }
+.zero { color: var(--muted); opacity: .55; }
+.warn { color: var(--warn); font-weight: 600; }
+.bad { color: var(--bad); font-weight: 600; }
+.sub { color: var(--muted); font-size: 12px; }
+td.heat { text-align: center; color: var(--heat-text); min-width: 52px; }
+td.heat.empty { color: var(--muted); }
+code { font: 12px ui-monospace, "Cascadia Code", Consolas, monospace; }
+.settings { white-space: normal; color: var(--muted); font-size: 12px; text-align: left;
+  min-width: 320px; }
+.note { color: var(--muted); font-size: 12.5px; margin-top: 18px; max-width: 900px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a.home { display: inline-block; font-size: 13px; margin-bottom: 10px; }
+</style>
+</head>
+<body><main>
+
+<h1>simplebench — 2026-11-07</h1>
+<div class="meta"><span>Created: <b>2026-11-07 18:17</b></span><span>Updated: <b>2026-11-14 12:04</b></span><span>Questions: <b>10</b></span><span>Repeats: <b>5</b></span><span>Max points: <b>50</b></span><span>Prompt: <b>one_letter</b></span><span>Temperature: <b>None</b></span><span>Max tokens: <b>None</b></span><span>Run time: <b>untracked (created before session timing)</b></span></div>
+<h2>Leaderboard</h2>
+<div class="card"><table class="sortable-table">
+<thead><tr>
+<th class="sortable l">#</th>
+<th class="sortable l">Model</th>
+<th class="sortable ">Score</th>
+<th class="sortable ">Points</th>
+<th class="sortable ">Per round (of 10)</th>
+<th class="sortable ">Majority vote</th>
+<th class="sortable ">Unparsed</th>
+<th class="sortable ">Truncated</th>
+<th class="sortable ">Errors</th>
+<th class="sortable ">Avg time</th>
+<th class="sortable ">Avg out tok</th>
+<th class="sortable ">Cost</th>
+</tr></thead>
+<tbody>
+<tr><td class="l rank" data-v="1">1</td><td class="l"><span class="model">or-gemma-4-26b</span><span class="tag cloud">cloud</span></td><td data-v="66.000" class=best-cell><div class="score"><span class="best">66.0%</span><span class="bar"><i style="width:66.0%"></i></span></div></td><td data-v="33">33/50</td><td data-v="6.6"><span class="best">6.6 ± 0.5</span></td><td data-v="6"><span class="best">6/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="64.0788">64.1s</td><td data-v="5146.62">5147</td><td data-v="0.0781013">$0.0781</td></tr>
+<tr><td class="l rank" data-v="2">2</td><td class="l"><span class="model">or-qwen3.8-27b</span><span class="tag cloud">cloud</span></td><td data-v="66.000" class=best-cell><div class="score"><span class="best">66.0%</span><span class="bar"><i style="width:66.0%"></i></span></div></td><td data-v="33">33/50</td><td data-v="6.6"><span class="best">6.6 ± 0.9</span></td><td data-v="5"><span class="">5/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="19.5668">19.6s</td><td data-v="977.24">977</td><td data-v="0.09303225">$0.0930</td></tr>
+<tr><td class="l rank" data-v="3">3</td><td class="l"><span class="model">or-bonsai-2-9b</span><span class="tag cloud">cloud</span></td><td data-v="44.000"><div class="score"><span class="">44.0%</span><span class="bar"><i style="width:44.0%"></i></span></div></td><td data-v="22">22/50</td><td data-v="4.4"><span class="">4.4 ± 0.9</span></td><td data-v="5"><span class="">5/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="71.4842">71.5s</td><td data-v="5996.5">5996</td><td data-v="0.03973245">$0.0397</td></tr>
+<tr><td class="l rank" data-v="4">4</td><td class="l"><span class="model">or-bonsai-2-27b</span><span class="tag cloud">cloud</span></td><td data-v="42.000"><div class="score"><span class="">42.0%</span><span class="bar"><i style="width:42.0%"></i></span></div></td><td data-v="21">21/50</td><td data-v="4.2"><span class="">4.2 ± 0.8</span></td><td data-v="5"><span class="">5/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="37.278999999999996">37.3s</td><td data-v="1151.48">1151</td><td data-v="0.029495">$0.0295</td></tr>
+<tr><td class="l rank" data-v="5">5</td><td class="l"><span class="model">or-gpt-oss-20b</span><span class="tag cloud">cloud</span></td><td data-v="28.000"><div class="score"><span class="">28.0%</span><span class="bar"><i style="width:28.0%"></i></span></div></td><td data-v="14">14/50</td><td data-v="2.8"><span class="">2.8 ± 0.8</span></td><td data-v="2"><span class="">2/10</span></td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="0" class="zero">0</td><td data-v="77.1458">77.1s</td><td data-v="9754.12">9754</td><td data-v="0.068621053">$0.0686</td></tr>
+<tr><td class="l rank" data-v="6">6</td><td class="l"><span class="model">or-nemotron-3.5-lightning</span><span class="tag cloud">cloud</span></td><td data-v="28.000"><div class="score"><span class="">28.0%</span><span class="bar"><i style="width:28.0%"></i></span></div></td><td data-v="14">14/50</td><td data-v="2.8"><span class="">2.8 ± 1.3</span></td><td data-v="3"><span class="">3/10</span></td><td data-v="0" class="zero">0</td><td data-v="1" class="warn">1</td><td data-v="0" class="zero">0</td><td data-v="44.3414">44.3s</td><td data-v="11546.92">11547</td><td data-v="0.1161692">$0.1162</td></tr>
+<tr><td class="l rank" data-v="7">7</td><td class="l"><span class="model">or-lfm2.5-24b</span><span class="tag cloud">cloud</span></td><td data-v="20.000"><div class="score"><span class="">20.0%</span><span class="bar"><i style="width:20.0%"></i></span></div></td><td data-v="10">10/50</td><td data-v="2"><span class="">2.0 ± 0.7</span></td><td data-v="1"><span class="">1/10</span></td><td data-v="0" class="zero">0</td><td data-v="9" class="warn">9</td><td data-v="0" class="zero">0</td><td data-v="42.026">42.0s</td><td data-v="5674.52">5675</td><td data-v="0.1990902">$0.1991</td></tr>
+</tbody></table></div>
+<h2>Per question <span class=sub>(correct / attempts)</span></h2>
+<div class="card"><table class="sortable-table"><thead><tr>
+<th class="sortable l">Model</th>
+<th class="sortable" style="text-align:center">Q1 <span class="sub">(B)</span></th>
+<th class="sortable" style="text-align:center">Q2 <span class="sub">(A)</span></th>
+<th class="sortable" style="text-align:center">Q3 <span class="sub">(A)</span></th>
+<th class="sortable" style="text-align:center">Q4 <span class="sub">(C)</span></th>
+<th class="sortable" style="text-align:center">Q5 <span class="sub">(B)</span></th>
+<th class="sortable" style="text-align:center">Q6 <span class="sub">(A)</span></th>
+<th class="sortable" style="text-align:center">Q7 <span class="sub">(C)</span></th>
+<th class="sortable" style="text-align:center">Q8 <span class="sub">(F)</span></th>
+<th class="sortable" style="text-align:center">Q9 <span class="sub">(A)</span></th>
+<th class="sortable" style="text-align:center">Q10 <span class="sub">(B)</span></th>
+</tr></thead><tbody>
+<tr><td class="l model">or-gemma-4-26b</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.400" style="background: hsl(54 62% var(--heat-l))" title="2 of 5 correct">2/5</td><td class="heat" data-v="0.200" style="background: hsl(27 62% var(--heat-l))" title="1 of 5 correct">1/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td></tr>
+<tr><td class="l model">or-qwen3.8-27b</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.400" style="background: hsl(54 62% var(--heat-l))" title="2 of 5 correct">2/5</td><td class="heat" data-v="0.400" style="background: hsl(54 62% var(--heat-l))" title="2 of 5 correct">2/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.200" style="background: hsl(27 62% var(--heat-l))" title="1 of 5 correct">1/5</td><td class="heat" data-v="0.400" style="background: hsl(54 62% var(--heat-l))" title="2 of 5 correct">2/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.200" style="background: hsl(27 62% var(--heat-l))" title="1 of 5 correct">1/5</td></tr>
+<tr><td class="l model">or-bonsai-2-9b</td><td class="heat" data-v="0.800" style="background: hsl(108 62% var(--heat-l))" title="4 of 5 correct">4/5</td><td class="heat" data-v="0.800" style="background: hsl(108 62% var(--heat-l))" title="4 of 5 correct">4/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.400" style="background: hsl(54 62% var(--heat-l))" title="2 of 5 correct">2/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.600" style="background: hsl(81 62% var(--heat-l))" title="3 of 5 correct">3/5</td><td class="heat" data-v="0.800" style="background: hsl(108 62% var(--heat-l))" title="4 of 5 correct">4/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td></tr>
+<tr><td class="l model">or-bonsai-2-27b</td><td class="heat" data-v="0.800" style="background: hsl(108 62% var(--heat-l))" title="4 of 5 correct">4/5</td><td class="heat" data-v="0.800" style="background: hsl(108 62% var(--heat-l))" title="4 of 5 correct">4/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.600" style="background: hsl(81 62% var(--heat-l))" title="3 of 5 correct">3/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td></tr>
+<tr><td class="l model">or-gpt-oss-20b</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.400" style="background: hsl(54 62% var(--heat-l))" title="2 of 5 correct">2/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.200" style="background: hsl(27 62% var(--heat-l))" title="1 of 5 correct">1/5</td><td class="heat" data-v="0.200" style="background: hsl(27 62% var(--heat-l))" title="1 of 5 correct">1/5</td><td class="heat" data-v="0.200" style="background: hsl(27 62% var(--heat-l))" title="1 of 5 correct">1/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.800" style="background: hsl(108 62% var(--heat-l))" title="4 of 5 correct">4/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td></tr>
+<tr><td class="l model">or-nemotron-3.5-lightning</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.600" style="background: hsl(81 62% var(--heat-l))" title="3 of 5 correct">3/5</td><td class="heat" data-v="0.200" style="background: hsl(27 62% var(--heat-l))" title="1 of 5 correct">1/5</td><td class="heat" data-v="0.400" style="background: hsl(54 62% var(--heat-l))" title="2 of 5 correct">2/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.600" style="background: hsl(81 62% var(--heat-l))" title="3 of 5 correct">3/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td></tr>
+<tr><td class="l model">or-lfm2.5-24b</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.400" style="background: hsl(54 62% var(--heat-l))" title="2 of 5 correct">2/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="0.200" style="background: hsl(27 62% var(--heat-l))" title="1 of 5 correct">1/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td><td class="heat" data-v="1.000" style="background: hsl(135 62% var(--heat-l))" title="5 of 5 correct">5/5</td><td class="heat" data-v="0.400" style="background: hsl(54 62% var(--heat-l))" title="2 of 5 correct">2/5</td><td class="heat" data-v="0.000" style="background: hsl(0 62% var(--heat-l))" title="0 of 5 correct">0/5</td></tr>
+</tbody></table></div>
+<h2>Models</h2>
+<div class="card"><table><thead><tr>
+<th class="l">Model</th><th class="l">Provider</th><th class="l">Model id</th>
+<th class="l">Settings</th></tr></thead><tbody>
+<tr><td class="l model">or-gemma-4-26b</td><td class="l">openrouter</td><td class="l"><code>google/gemma-4-26b-a4b-it</code></td><td class="settings">timeout=900, reasoning={&#x27;enabled&#x27;: True}, routing={&#x27;order&#x27;: [&#x27;coreweave/bf16&#x27;, &#x27;parasail/bf16&#x27;, &#x27;novita/bf16&#x27;], &#x27;allow_fallbacks&#x27;: False}</td></tr>
+<tr><td class="l model">or-qwen3.8-27b</td><td class="l">openrouter</td><td class="l"><code>qwen/qwen3.8-27b</code></td><td class="settings">timeout=900, reasoning={&#x27;effort&#x27;: &#x27;high&#x27;}, routing={&#x27;order&#x27;: [&#x27;deepinfra/bf16&#x27;, &#x27;cerebras/fp16&#x27;], &#x27;allow_fallbacks&#x27;: False}</td></tr>
+<tr><td class="l model">or-bonsai-2-9b</td><td class="l">openrouter</td><td class="l"><code>prism-ml/ternary-bonsai-2-9b</code></td><td class="settings">timeout=900, reasoning={&#x27;enabled&#x27;: True}, routing={&#x27;order&#x27;: [&#x27;darkbloom/int4&#x27;], &#x27;allow_fallbacks&#x27;: False}</td></tr>
+<tr><td class="l model">or-bonsai-2-27b</td><td class="l">openrouter</td><td class="l"><code>prism-ml/ternary-bonsai-2-27b</code></td><td class="settings">timeout=900, reasoning={&#x27;effort&#x27;: &#x27;high&#x27;}, routing={&#x27;order&#x27;: [&#x27;darkbloom/int4&#x27;], &#x27;allow_fallbacks&#x27;: False}</td></tr>
+<tr><td class="l model">or-gpt-oss-20b</td><td class="l">openrouter</td><td class="l"><code>openai/gpt-oss-20b</code></td><td class="settings">timeout=900, reasoning={&#x27;effort&#x27;: &#x27;high&#x27;}, routing={&#x27;order&#x27;: [&#x27;deepinfra/bf16&#x27;, &#x27;dekallm/bf16&#x27;], &#x27;allow_fallbacks&#x27;: False}</td></tr>
+<tr><td class="l model">or-nemotron-3.5-lightning</td><td class="l">openrouter</td><td class="l"><code>nvidia/nemotron-3.5-lightning</code></td><td class="settings">timeout=900, reasoning={&#x27;enabled&#x27;: True}, routing={&#x27;order&#x27;: [&#x27;coreweave/bf16&#x27;, &#x27;deepinfra/bf16&#x27;], &#x27;allow_fallbacks&#x27;: False}</td></tr>
+<tr><td class="l model">or-lfm2.5-24b</td><td class="l">openrouter</td><td class="l"><code>liquid/lfm-2.5-24b-a2b</code></td><td class="settings">timeout=900, reasoning={&#x27;enabled&#x27;: True}, routing={&#x27;order&#x27;: [&#x27;liquid/fp8&#x27;], &#x27;allow_fallbacks&#x27;: False}</td></tr>
+</tbody></table></div>
+<p class="note">Score = points / scored attempts. Errors (API failures) are not scored and are retried by bench run; unparsed and truncated replies (output token limit or max_duration reached) count as wrong. Per round = mean ± SD of points per full pass over the questions. Majority vote = questions where the correct letter was the single most common answer. Click a column header to sort.</p>
+<script>
+document.querySelectorAll("table.sortable-table").forEach(table => {
+  const heads = table.querySelectorAll("th.sortable");
+  heads.forEach((th, idx) => th.addEventListener("click", () => {
+    const col = [...th.parentNode.children].indexOf(th);
+    const asc = th.classList.contains("sorted") && !th.classList.contains("asc");
+    heads.forEach(h => h.classList.remove("sorted", "asc"));
+    th.classList.add("sorted"); if (asc) th.classList.add("asc");
+    const body = table.tBodies[0];
+    const rows = [...body.rows];
+    const key = r => { const c = r.children[col]; const v = c.dataset.v;
+      return v === undefined ? c.textContent.trim().toLowerCase() : parseFloat(v); };
+    rows.sort((a, b) => { const x = key(a), y = key(b);
+      if (typeof x === "number" && typeof y === "number") {
+        if (isNaN(x)) return 1; if (isNaN(y)) return -1; return asc ? x - y : y - x; }
+      return asc ? String(y).localeCompare(String(x)) : String(x).localeCompare(String(y)); });
+    rows.forEach(r => body.appendChild(r));
+  }));
+});
+</script>
+</main></body></html>

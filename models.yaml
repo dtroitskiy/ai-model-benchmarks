@@ -47,7 +47,7 @@ models:
   ollama-mimo-v2.6:              {provider: ollama, model: "mimo-v2.6:latest"}
   ollama-nemotron-3.5-lightning: {provider: ollama, model: "nemotron-3.5-lightning:latest"}
   ollama-ornith-1.5-9b:          {provider: ollama, model: "ornith-1.5:9b"}
-  ollama-qwen3.8:                {provider: ollama, model: "qwen3.8:latest"}
+  ollama-qwen3.8-27b:            {provider: ollama, model: "qwen3.8:latest"}
   
   # --- Cloud (OpenRouter) ---
   # reasoning: {effort: high} only where hosts accept an effort level; elsewhere {enabled: true}
@@ -63,6 +63,9 @@ models:
   or-claude-haiku-5.5:           # proprietary: identical weights on every host, so several are listed
     {provider: openrouter, model: "anthropic/claude-haiku-5.5", reasoning: {effort: high},
      routing: {order: ["anthropic", "amazon-bedrock", "google-vertex/global"], allow_fallbacks: false}}
+  or-deepseek-v4.1-flash:        # efforts: none/low/high/max (default high); no bf16 hosts, fp8 only
+    {provider: openrouter, model: "deepseek/deepseek-v4.1-flash", reasoning: {effort: high},
+     routing: {order: ["deepinfra/fp8", "coreweave/fp8", "novita/fp8"], allow_fallbacks: false}}
   or-flint:                      # free tier: rate limited (~20 req/min, daily cap), single host
     {provider: openrouter, model: "recursive/flint-v1.0:free", reasoning: {enabled: true},
      concurrency: 2, routing: {order: ["recursive/bf16"], allow_fallbacks: false}}
@@ -93,6 +96,6 @@ models:
   or-nemotron-3.5-lightning:
     {provider: openrouter, model: "nvidia/nemotron-3.5-lightning", reasoning: {enabled: true},
      routing: {order: ["coreweave/bf16", "deepinfra/bf16"], allow_fallbacks: false}}
-  or-qwen3.8:
+  or-qwen3.8-27b:
     {provider: openrouter, model: "qwen/qwen3.8-27b", reasoning: {effort: high},
      routing: {order: ["deepinfra/bf16", "cerebras/fp16"], allow_fallbacks: false}}

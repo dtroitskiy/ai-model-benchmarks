@@ -82,7 +82,7 @@ models:
       - deepinfra/bf16
       allow_fallbacks: false
     added: '2026-11-07T18:17:38+01:00'
-  or-qwen3.8:
+  or-qwen3.8-27b:
     timeout: 900
     provider: openrouter
     model: qwen/qwen3.8-27b
